@@ -1,0 +1,121 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>Joint Distributions — Interactive</title>
+<link rel="stylesheet" href="assets/style.css">
+<script src="https://cdn.plot.ly/plotly-2.35.2.min.js" charset="utf-8"></script>
+<script>window.MathJax={tex:{inlineMath:[['\\(','\\)']]},svg:{fontCache:'global'}};</script>
+<script src="https://cdn.jsdelivr.net/npm/mathjax@3/es5/tex-mml-chtml.js" async></script>
+</head>
+<body data-page="joint">
+<main class="wrap narrow">
+  <h1>Joint Distributions &amp; Correlation</h1>
+  <p class="lead">A bivariate normal in the center, with its two marginals along the
+  edges. Turn the correlation dial and watch the joint density tilt — while the
+  marginals barely change. That gap is the whole lesson of Chapter&nbsp;5:
+  correlation lives in the <em>joint</em> behavior, not the margins.</p>
+
+  <div class="widget">
+    <div class="controls">
+      <div class="control">
+        <label for="rho">Correlation ρ <span class="val" id="val-rho">0.00</span></label>
+        <input type="range" id="rho" min="-0.95" max="0.95" step="0.01" value="0.6">
+      </div>
+      <div class="control">
+        <label for="sx">σ&#8339; (spread in x) <span class="val" id="val-sx">1.0</span></label>
+        <input type="range" id="sx" min="0.5" max="2.5" step="0.05" value="1.0">
+      </div>
+      <div class="control">
+        <label for="sy">σ&#8336; (spread in y) <span class="val" id="val-sy">1.0</span></label>
+        <input type="range" id="sy" min="0.5" max="2.5" step="0.05" value="1.0">
+      </div>
+      <div class="control" style="justify-content:flex-end">
+        <button class="mini" id="resample">🎲 Resample points</button>
+      </div>
+    </div>
+    <div id="plot" class="plot" style="min-height:500px"></div>
+    <div class="readout" id="readout"></div>
+  </div>
+
+  <div class="note">
+    <b>Watch the margins.</b> As \(\rho\) swings from \(+0.95\) to \(-0.95\), the
+    cloud rotates from a tight up-slope to a tight down-slope, but the two edge
+    curves (the marginals of \(X\) and \(Y\)) keep the same width. Set \(\rho=0\)
+    and the contours become axis-aligned — \(X\) and \(Y\) are then independent.
+  </div>
+</main>
+
+<script src="assets/stats.js"></script>
+<script>
+const S=window.Stats;
+const COL="#1f5fa8", GREEN="#2a8f5a", RED="#b03030";
+let rng=S.makeRNG(7);
+
+function bvnDensity(x,y,sx,sy,rho){
+  const zx=x/sx, zy=y/sy, r2=1-rho*rho;
+  return Math.exp(-(zx*zx-2*rho*zx*zy+zy*zy)/(2*r2))/(2*Math.PI*sx*sy*Math.sqrt(r2));
+}
+function samplePts(sx,sy,rho,n){
+  const px=[],py=[];
+  for(let i=0;i<n;i++){
+    const z1=S.sampleNormal(rng,0,1), z2=S.sampleNormal(rng,0,1);
+    px.push(sx*z1); py.push(sy*(rho*z1+Math.sqrt(1-rho*rho)*z2));
+  }
+  return {px,py};
+}
+
+function draw(resample){
+  const rho=+document.getElementById("rho").value;
+  const sx=+document.getElementById("sx").value, sy=+document.getElementById("sy").value;
+  const L=4;
+  const gx=S.linspace(-L,L,60), gy=S.linspace(-L,L,60);
+  const z=gy.map(y=>gx.map(x=>bvnDensity(x,y,sx,sy,rho)));
+  if(resample||!window._pts) window._pts=samplePts(sx,sy,rho,400);
+  const pts=window._pts;
+  const mx=S.linspace(-L,L,120), mxy=mx.map(x=>S.normalPdf(x,0,sx));
+  const my=S.linspace(-L,L,120), myy=my.map(y=>S.normalPdf(y,0,sy));
+
+  const traces=[
+    // main contour
+    {z:z,x:gx,y:gy,type:"contour",colorscale:[[0,"rgba(31,95,168,0)"],[1,"rgba(31,95,168,.9)"]],
+      showscale:false,contours:{coloring:"fill"},xaxis:"x",yaxis:"y",hoverinfo:"skip"},
+    // sample points
+    {x:pts.px,y:pts.py,type:"scatter",mode:"markers",
+      marker:{color:"rgba(42,143,90,.55)",size:4},xaxis:"x",yaxis:"y",hoverinfo:"skip"},
+    // top marginal (X)
+    {x:mx,y:mxy,type:"scatter",mode:"lines",line:{color:COL,width:2},fill:"tozeroy",
+      fillcolor:"rgba(31,95,168,.12)",xaxis:"x",yaxis:"y2",hoverinfo:"skip"},
+    // right marginal (Y)
+    {x:myy,y:my,type:"scatter",mode:"lines",line:{color:COL,width:2},fill:"tozerox",
+      fillcolor:"rgba(31,95,168,.12)",xaxis:"x2",yaxis:"y",hoverinfo:"skip"},
+  ];
+  const layout={
+    height:500,margin:{l:55,r:15,t:15,b:45},showlegend:false,
+    paper_bgcolor:"rgba(0,0,0,0)",plot_bgcolor:"rgba(0,0,0,0)",
+    xaxis:{domain:[0,0.82],range:[-L,L],title:"X",gridcolor:"#e6ecf3",zeroline:false},
+    yaxis:{domain:[0,0.82],range:[-L,L],title:"Y",gridcolor:"#e6ecf3",zeroline:false},
+    xaxis2:{domain:[0.84,1],showticklabels:false,gridcolor:"#eef2f7",zeroline:false},
+    yaxis2:{domain:[0.84,1],showticklabels:false,gridcolor:"#eef2f7",zeroline:false},
+  };
+  Plotly.react("plot",traces,layout,{displayModeBar:false,responsive:true});
+
+  document.getElementById("readout").innerHTML=
+    stat("Correlation ρ",rho)+stat("Cov(X,Y) = ρ σₓσᵧ",rho*sx*sy)+
+    stat("Var(X)",sx*sx)+stat("Var(Y)",sy*sy)+
+    '<div class="stat"><b>Independent?</b><br><span class="num" style="color:'+
+      (Math.abs(rho)<1e-9?GREEN:RED)+'">'+(Math.abs(rho)<1e-9?"yes (ρ=0)":"no")+'</span></div>';
+}
+function stat(l,v){return '<div class="stat"><b>'+l+'</b><br><span class="num">'+(+v).toFixed(2)+'</span></div>';}
+
+document.getElementById("rho").addEventListener("input",e=>{document.getElementById("val-rho").textContent=(+e.target.value).toFixed(2);draw(true);});
+document.getElementById("sx").addEventListener("input",e=>{document.getElementById("val-sx").textContent=(+e.target.value).toFixed(1);draw(true);});
+document.getElementById("sy").addEventListener("input",e=>{document.getElementById("val-sy").textContent=(+e.target.value).toFixed(1);draw(true);});
+document.getElementById("resample").addEventListener("click",()=>{rng=S.makeRNG((Math.random()*1e9)|0);draw(true);});
+document.getElementById("val-rho").textContent="0.60";
+draw(true);
+</script>
+<script src="assets/site.js"></script>
+</body>
+</html>

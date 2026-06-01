@@ -1,0 +1,129 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>Percentiles, IQR &amp; EDA — Interactive</title>
+<link rel="stylesheet" href="assets/style.css">
+<script src="https://cdn.plot.ly/plotly-2.35.2.min.js" charset="utf-8"></script>
+<script>window.MathJax={tex:{inlineMath:[['\\(','\\)']]},svg:{fontCache:'global'}};</script>
+<script src="https://cdn.jsdelivr.net/npm/mathjax@3/es5/tex-mml-chtml.js" async></script>
+</head>
+<body data-page="eda">
+<main class="wrap narrow">
+  <h1>Percentiles, the IQR &amp; Exploratory Data Analysis</h1>
+  <p class="lead">A single dataset of 240 geyser-eruption durations, viewed three
+  ways. Tune the histogram bins and the kernel bandwidth, then dissect the
+  five-number summary that a boxplot is built from (Chapter&nbsp;7).</p>
+
+  <h2>① Histogram &amp; kernel density estimate</h2>
+  <div class="widget">
+    <div class="controls">
+      <div class="control">
+        <label for="bins">Histogram bin width <span class="val" id="val-bins">12</span></label>
+        <input type="range" id="bins" min="2" max="60" step="1" value="12">
+      </div>
+      <div class="control">
+        <label for="bw">KDE bandwidth h <span class="val" id="val-bw">12</span></label>
+        <input type="range" id="bw" min="2" max="60" step="1" value="12">
+      </div>
+    </div>
+    <div id="histPlot" class="plot"></div>
+    <div class="note" style="margin-bottom:0">
+      <b>The bias–variance tradeoff, by hand.</b> Tiny bins / small bandwidth give a
+      spiky, noisy picture; huge ones smear the two peaks into one. Somewhere in the
+      middle the dataset's <em>bimodal</em> structure appears.
+    </div>
+  </div>
+
+  <h2>② Percentiles, quartiles &amp; the interquartile range</h2>
+  <div class="widget">
+    <div class="controls">
+      <div class="control">
+        <label for="pct">Percentile p <span class="val" id="val-pct">0.50</span></label>
+        <input type="range" id="pct" min="0.01" max="0.99" step="0.01" value="0.50">
+      </div>
+    </div>
+    <div id="boxPlot" class="plot" style="min-height:260px"></div>
+    <div class="readout" id="readout"></div>
+    <p class="muted" style="margin-top:.7rem">The shaded band is the
+      <b>interquartile range</b> (IQR), the span of the middle 50% of the data; the
+      moving line is the \(p\)-th empirical quantile \(q_n(p)\).</p>
+  </div>
+</main>
+
+<script src="assets/stats.js"></script>
+<script>
+const S=window.Stats;
+const COL="#1f5fa8", GREEN="#2a8f5a", RED="#b03030", GOLD="#c9a227";
+
+// build a fixed bimodal "Old Faithful"-like dataset (seconds)
+const rng=S.makeRNG(777);
+const DATA=[];
+for(let i=0;i<90;i++) DATA.push(S.sampleNormal(rng,118,14));
+for(let i=0;i<150;i++) DATA.push(S.sampleNormal(rng,272,24));
+for(let i=0;i<DATA.length;i++) DATA[i]=Math.min(306,Math.max(96,DATA[i]));
+const fn=S.fiveNumber(DATA);
+const XLO=80, XHI=320;
+
+/* ---- widget 1: histogram + KDE ---- */
+function drawHist(){
+  const bw=+document.getElementById("bins").value;
+  const h=+document.getElementById("bw").value;
+  const xs=S.linspace(XLO,XHI,300);
+  const kde=S.kde(DATA,xs,h);
+  Plotly.react("histPlot",[
+    {x:DATA,type:"histogram",histnorm:"probability density",
+      xbins:{start:XLO,end:XHI,size:bw},
+      marker:{color:"rgba(31,95,168,.45)",line:{color:"#fff",width:.6}},name:"histogram"},
+    {x:xs,y:kde,type:"scatter",mode:"lines",line:{color:RED,width:2.5},name:"KDE"},
+  ],{
+    margin:{l:55,r:15,t:10,b:42},height:380,
+    xaxis:{title:"eruption duration (s)",gridcolor:"#e6ecf3",range:[XLO,XHI]},
+    yaxis:{title:"density",gridcolor:"#e6ecf3"},
+    paper_bgcolor:"rgba(0,0,0,0)",plot_bgcolor:"rgba(0,0,0,0)",
+    legend:{orientation:"h",y:1.1,x:1,xanchor:"right"},bargap:0.03,
+  },{displayModeBar:false,responsive:true});
+}
+
+/* ---- widget 2: boxplot + percentile ---- */
+function drawBox(){
+  const p=+document.getElementById("pct").value;
+  const qp=S.quantile(fn.sorted,p);
+  Plotly.react("boxPlot",[
+    // jittered raw points
+    {x:DATA,y:DATA.map(()=>0.5+(rng2()-0.5)*0.25),type:"scatter",mode:"markers",
+      marker:{color:"rgba(42,143,90,.5)",size:5},hoverinfo:"x",name:"data"},
+    {x:DATA,type:"box",boxpoints:false,orientation:"h",y0:0,width:0.5,
+      marker:{color:COL},line:{color:COL},fillcolor:"rgba(31,95,168,.12)",name:"boxplot"},
+  ],{
+    margin:{l:20,r:15,t:10,b:42},height:260,
+    xaxis:{title:"eruption duration (s)",gridcolor:"#e6ecf3",range:[XLO,XHI]},
+    yaxis:{visible:false,range:[-0.6,1.1]},
+    paper_bgcolor:"rgba(0,0,0,0)",plot_bgcolor:"rgba(0,0,0,0)",showlegend:false,
+    shapes:[
+      // IQR band
+      {type:"rect",x0:fn.q1,x1:fn.q3,y0:-0.6,y1:1.1,fillcolor:"rgba(201,162,39,.13)",
+        line:{width:0},layer:"below"},
+      // percentile line
+      {type:"line",x0:qp,x1:qp,y0:-0.6,y1:1.1,line:{color:RED,width:2.5,dash:"dash"}},
+    ],
+    annotations:[{x:qp,y:1.1,text:"q("+p.toFixed(2)+") = "+qp.toFixed(1),showarrow:false,
+      yanchor:"bottom",font:{color:RED,size:12}}],
+  },{displayModeBar:false,responsive:true});
+
+  document.getElementById("readout").innerHTML=
+    stat("Min",fn.min)+stat("Q1 (25%)",fn.q1)+stat("Median",fn.med)+
+    stat("Q3 (75%)",fn.q3)+stat("Max",fn.max)+stat("IQR",fn.q3-fn.q1);
+}
+let _r=S.makeRNG(99); function rng2(){return _r();}
+function stat(l,v){return '<div class="stat"><b>'+l+'</b><br><span class="num">'+(+v).toFixed(1)+'</span></div>';}
+
+document.getElementById("bins").addEventListener("input",e=>{document.getElementById("val-bins").textContent=e.target.value;drawHist();});
+document.getElementById("bw").addEventListener("input",e=>{document.getElementById("val-bw").textContent=e.target.value;drawHist();});
+document.getElementById("pct").addEventListener("input",e=>{document.getElementById("val-pct").textContent=(+e.target.value).toFixed(2);_r=S.makeRNG(99);drawBox();});
+drawHist(); drawBox();
+</script>
+<script src="assets/site.js"></script>
+</body>
+</html>

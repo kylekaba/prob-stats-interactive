@@ -1,0 +1,212 @@
+\chapter{Joint Distributions, Covariance, and Correlation}
+\label{ch:joint}
+
+So far we have studied one random variable at a time. But many questions
+concern \emph{two or more} quantities together: hair color and eye color, a
+chip's defect status across a batch, a wood's density and its hardness. The
+\emph{joint distribution} encodes how a pair of random variables behave
+simultaneously, and from it we can read off whether they move together, and how
+strongly.
+
+\section{Joint and Marginal Distributions}
+
+For discrete $X$ and $Y$, the \emph{joint pmf} is $p(a,b)=\Prob(X=a,Y=b)$. From
+it we recover each variable's own (\emph{marginal}) distribution by summing out
+the other:
+\[
+  p_X(a)=\sum_b p(a,b),\qquad p_Y(b)=\sum_a p(a,b).
+\]
+The marginals live in the row and column totals of the joint table.
+
+\begin{example}[Completing a joint table]
+The joint distribution of $X\in\{0,1,2\}$ and $Y\in\{-1,1\}$ is partly given:
+the margins are $p_X=(\tfrac16,\tfrac23,\tfrac16)$ and
+$p_Y=(\tfrac12,\tfrac12)$, the row $Y=1$ reads $(0,\tfrac12,0)$. Complete the
+table and decide whether $X$ and $Y$ are independent.
+
+\solution Each column must sum to its $X$-margin, so the row $Y=-1$ is
+$(\tfrac16,\tfrac16,\tfrac16)$:
+\[
+\begin{array}{c|ccc|c}
+ & 0 & 1 & 2 & p_Y\\\hline
+ Y=-1 & 1/6 & 1/6 & 1/6 & 1/2\\
+ Y=1 & 0 & 1/2 & 0 & 1/2\\\hline
+ p_X & 1/6 & 2/3 & 1/6 & 1
+\end{array}
+\]
+They are \emph{dependent}: for instance
+$\Prob(X=0,Y=1)=0\neq\tfrac16\cdot\tfrac12=\Prob(X=0)\Prob(Y=1)$.
+\end{example}
+
+\begin{example}[Reconstructing a joint distribution]
+$X$ and $Y$ each take values $1,\dots,5$ with margins
+$p_X=(\tfrac1{14},\tfrac5{14},\tfrac4{14},\tfrac2{14},\tfrac2{14})$ and
+$p_Y=(\tfrac5{14},\tfrac4{14},\tfrac2{14},\tfrac2{14},\tfrac1{14})$. Each joint
+probability is either $0$ or $\tfrac1{14}$. Find the joint distribution.
+
+\solution Each cell is $\tfrac1{14}$ or $0$, and the number of $\tfrac1{14}$
+cells in a row (column) must equal $14$ times that row's (column's) margin.
+Working row by row—five entries in the row summing to $\tfrac5{14}$, four in the
+next, and so on, while respecting the column totals—forces a unique
+``staircase'' pattern in which row $i$ has $14p_Y(i)$ filled cells packed toward
+the columns with the largest remaining demand. The filled cells are exactly
+those $(a,b)$ for which the cumulative column and row counts still admit a unit,
+producing the table whose row sums are $5,4,2,2,1$ (times $\tfrac1{14}$) and
+column sums $1,5,4,2,2$.
+\end{example}
+
+\begin{example}[Hair color and eye color]
+The hair and eye color of $5383$ people are cross-classified. Dividing the
+counts by $5383$ turns the table into a joint distribution for hair color $X$
+and eye color $Y$. Are $X$ and $Y$ independent?
+
+\solution The joint and marginal probabilities are the cell counts and
+row/column totals divided by $5383$. Independence fails dramatically: the
+observed $\Prob(\text{fair hair, light eyes})=1168/5383\approx 0.22$, but the
+product of margins is $(1741/5383)(2298/5383)\approx 0.14$. Fair hair and light
+eyes co-occur far more often than independence would predict—the variables are
+strongly associated.
+\end{example}
+
+\section{Expectation of a Function; Covariance and Correlation}
+
+For a function $g(X,Y)$, $\E[g(X,Y)]=\sum_{a,b} g(a,b)\,p(a,b)$. The most
+important case is the \emph{covariance}, which measures how $X$ and $Y$ vary
+together:
+\[
+  \Cov(X,Y)=\E[XY]-\E[X]\E[Y].
+\]
+Its scale-free version is the \emph{correlation coefficient}
+\[
+  \rho(X,Y)=\frac{\Cov(X,Y)}{\sqrt{\Var(X)\Var(Y)}}\in[-1,1].
+\]
+Independent variables are uncorrelated ($\rho=0$), but the converse can fail.
+
+\begin{example}[Covariance from a joint table]
+For the joint distribution of $U,V$ with
+$\E[U]=1$, $\E[V]=\tfrac12$, and $\E[UV]=\tfrac12$, compute $\Cov(U,V)$ and
+$\rho(U,V)$.
+
+\solution $\Cov(U,V)=\E[UV]-\E[U]\E[V]=\tfrac12-(1)(\tfrac12)=0$. Since both
+variances are positive, $\rho(U,V)=0$ as well. Here zero covariance happens to
+coincide with the variables being uncorrelated by construction.
+\end{example}
+
+\begin{example}[Uncorrelated but dependent, and variances of sums]
+Consider $X\in\{0,1,2\}$, $Y\in\{0,1\}$ with joint distribution
+\[
+\begin{array}{c|ccc|c}
+ & 0 & 1 & 2 & p_Y\\\hline
+ Y=0 & 1/6 & 1/6 & 1/6 & 1/2\\
+ Y=1 & 1/4 & 0 & 1/4 & 1/2\\\hline
+ p_X & 5/12 & 1/6 & 5/12 & 1
+\end{array}
+\]
+Show $X$ and $Y$ are dependent yet uncorrelated, and find $\Var(X+Y)$ and
+$\Var(X-Y)$.
+
+\solution One computes $\E[XY]=\tfrac12$, $\E[X]=1$, $\E[Y]=\tfrac12$, so
+$\Cov(X,Y)=\tfrac12-(1)(\tfrac12)=0$: uncorrelated. Yet they are dependent, since
+$\Prob(X=1,Y=1)=0\neq\Prob(X=1)\Prob(Y=1)$. Thus \emph{zero correlation does not
+imply independence}—correlation only detects \emph{linear} association. With
+$\Var(X)=\tfrac56$ and $\Var(Y)=\tfrac14$, and using
+\[
+  \Var(X\pm Y)=\Var(X)+\Var(Y)\pm 2\Cov(X,Y),
+\]
+both $\Var(X+Y)$ and $\Var(X-Y)$ equal $\tfrac56+\tfrac14=\tfrac{13}{12}$,
+because the covariance term vanishes.
+\end{example}
+
+\begin{example}[Tuning the correlation]
+Let $X,Y\in\{0,1\}$ have joint distribution depending on a parameter $\epsilon$
+with $-\tfrac14\le\epsilon\le\tfrac14$:
+\[
+\begin{array}{c|cc|c}
+ & 0 & 1 & p_X\\\hline
+ 0 & 1/4-\epsilon & 1/4+\epsilon & 1/2\\
+ 1 & 1/4+\epsilon & 1/4-\epsilon & 1/2\\\hline
+ p_Y & 1/2 & 1/2 & 1
+\end{array}
+\]
+Express $\rho(X,Y)$ in terms of $\epsilon$ and find the values giving
+$\rho=1,0,-1$.
+
+\solution The margins are uniform on $\{0,1\}$, so $\E[X]=\E[Y]=\tfrac12$ and
+$\Var(X)=\Var(Y)=\tfrac14$ regardless of $\epsilon$. Computing
+$\E[XY]=\tfrac14-\epsilon$ gives $\Cov(X,Y)=(\tfrac14-\epsilon)-\tfrac14=-\epsilon$,
+hence
+\[
+  \rho(X,Y)=\frac{-\epsilon}{\sqrt{(1/4)(1/4)}}=-4\epsilon.
+\]
+So $\rho=1$ when $\epsilon=-\tfrac14$ (the off-diagonal probabilities vanish and
+$X=Y$ deterministically), $\rho=0$ when $\epsilon=0$ (independence), and
+$\rho=-1$ when $\epsilon=\tfrac14$ ($X=1-Y$). The single parameter $\epsilon$
+sweeps the correlation across its entire range.
+\end{example}
+
+\section{Continuous Joint Distributions}
+
+For continuous $X,Y$ the joint density $f(x,y)$ satisfies
+$\Prob((X,Y)\in A)=\iint_A f\,dx\,dy$, the marginals are
+$f_X(x)=\int f(x,y)\,dy$ and $f_Y(y)=\int f(x,y)\,dx$, and independence is
+$f(x,y)=f_X(x)f_Y(y)$ (equivalently $F(x,y)=F_X(x)F_Y(y)$).
+
+\begin{example}[From a joint cdf]
+Suppose $F(x,y)=1-\tfrac1x-\tfrac1{y^2}+\tfrac1{xy^2}$ for $x\ge 1,\,y\ge 1$
+(and $0$ otherwise). Find the joint density, the marginal densities, and decide
+whether $X$ and $Y$ are independent.
+
+\solution The joint density is the mixed partial derivative,
+\[
+  f(x,y)=\frac{\partial^2 F}{\partial x\,\partial y}=\frac{2}{x^2 y^3},\qquad x\ge 1,\ y\ge 1.
+\]
+Integrating out one variable at a time,
+$f_X(x)=\int_1^\infty \tfrac{2}{x^2 y^3}\,dy=\tfrac1{x^2}$ and
+$f_Y(y)=\int_1^\infty \tfrac{2}{x^2 y^3}\,dx=\tfrac{2}{y^3}$. Since
+$f_X(x)f_Y(y)=\tfrac{2}{x^2 y^3}=f(x,y)$, the variables are \emph{independent}.
+(Equivalently the cdf factors as $F(x,y)=(1-\tfrac1x)(1-\tfrac1{y^2})$.)
+\end{example}
+
+\begin{example}[A product-form density]
+Let $f(x,y)=12x(1-x)y$ for $0\le x\le 1,\,0\le y\le 1$. Find the marginal
+densities, the joint cdf, and $\Cov(X,Y)$.
+
+\solution Integrating out $y$, then $x$,
+\[
+  f_X(x)=\int_0^1 12x(1-x)y\,dy=6x(1-x),\qquad
+  f_Y(y)=\int_0^1 12x(1-x)y\,dx=2y.
+\]
+Because $f(x,y)=f_X(x)f_Y(y)$, the variables are independent, and the joint cdf
+factors:
+\[
+  F(x,y)=\Bigl(3x^2-2x^3\Bigr)\,y^2,\qquad 0\le x,y\le 1.
+\]
+Independence forces $\Cov(X,Y)=0$. We can confirm directly:
+$\E[X]=\tfrac12$, $\E[Y]=\tfrac23$, and $\E[XY]=\tfrac13=\E[X]\E[Y]$, so indeed
+$\Cov(X,Y)=0$.
+\end{example}
+
+\section{Linearity of Expectation in Action}
+
+Expectation is linear even when variables are dependent, and this single fact
+solves problems that look forbidding.
+
+\begin{example}[Group testing of blood samples]
+The blood of $1000$ people must be screened for a disease that each carries
+independently with probability $p=0.001$. Rather than $1000$ individual tests,
+pool the samples into $25$ groups of $40$: test each pooled sample, and if it is
+positive, retest all $40$ individuals (so that group costs $41$ tests). Let
+$X_i$ be the number of tests for group $i$. Find the expected total number of
+tests.
+
+\solution For a group, $X_i=1$ if the pool is clean and $X_i=41$ otherwise. The
+pool is clean with probability $(1-0.001)^{40}\approx 0.96$, so
+$\Prob(X_i=1)\approx 0.96$ and $\Prob(X_i=41)\approx 0.04$. Then
+\[
+  \E[X_i]=1(0.96)+41(0.04)=2.6,
+\]
+and by linearity the expected total over all $25$ groups is
+$\E\!\left[\sum_{i=1}^{25}X_i\right]=25(2.6)=65$. Pooling replaces $1000$
+guaranteed tests with about $65$ expected tests—a striking economy that exploits
+the rarity of the disease.
+\end{example}

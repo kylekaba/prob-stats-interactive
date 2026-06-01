@@ -1,0 +1,102 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>Probability &amp; Statistics — Interactive</title>
+<meta name="description" content="Interactive visualizations and animations for a one-semester probability and statistics course.">
+<link rel="stylesheet" href="assets/style.css">
+</head>
+<body data-page="index">
+
+<header class="hero">
+  <div class="hero-inner">
+    <span class="pill">Interactive companion · runs in your browser</span>
+    <h1>Probability &amp; Statistics, brought to life</h1>
+    <p>Drag a slider and watch a distribution reshape itself. Sample thousands of
+       times and see the Central Limit Theorem emerge. Explore the ideas from the
+       coursebook through live graphs and Manim animations.</p>
+    <div class="btn-row">
+      <a class="btn" href="distributions.html">Start exploring →</a>
+      <a class="btn ghost" href="pdf/Probability_and_Statistics_Coursebook.pdf">📘 Download the book (PDF)</a>
+    </div>
+  </div>
+</header>
+
+<main class="wrap">
+  <p class="lead">Eight interactive modules mirror the chapters of the book. Everything
+  below is computed live in your browser — there is no server, so you can fork it,
+  host it on GitHub Pages, and tinker freely.</p>
+
+  <h2>Interactive modules</h2>
+  <div class="cards">
+    <a class="card" href="distributions.html">
+      <div class="emoji">📈</div>
+      <div class="tag blue">Chapters 3–4</div>
+      <h3>Probability Distributions</h3>
+      <p>Slide the parameters of the normal, binomial, Poisson, geometric, and
+      exponential distributions and watch their shapes respond.</p>
+    </a>
+    <a class="card" href="clt.html">
+      <div class="emoji">🔔</div>
+      <div class="tag">Chapter 6</div>
+      <h3>Central Limit Theorem</h3>
+      <p>Pick any source distribution, choose a sample size, and watch the histogram
+      of sample means converge to a bell curve.</p>
+    </a>
+    <a class="card" href="lln.html">
+      <div class="emoji">🎲</div>
+      <div class="tag">Chapter 6</div>
+      <h3>Law of Large Numbers</h3>
+      <p>Follow running averages of coin flips and dice rolls as they settle toward
+      the true mean.</p>
+    </a>
+    <a class="card" href="eda.html">
+      <div class="emoji">📦</div>
+      <div class="tag">Chapter 7</div>
+      <h3>Percentiles, IQR &amp; EDA</h3>
+      <p>Adjust histogram bins and kernel bandwidth, and dissect a boxplot's
+      quartiles and interquartile range interactively.</p>
+    </a>
+    <a class="card" href="regression.html">
+      <div class="emoji">📉</div>
+      <div class="tag">Chapter 11</div>
+      <h3>Least-Squares Regression</h3>
+      <p>Move a line by hand and watch the sum of squared residuals — then snap to
+      the least-squares optimum.</p>
+    </a>
+    <a class="card" href="joint.html">
+      <div class="emoji">🗺️</div>
+      <div class="tag">Chapter 5</div>
+      <h3>Joint Distributions</h3>
+      <p>Turn the correlation dial on a bivariate normal and see the joint density,
+      its contours, and both marginals respond.</p>
+    </a>
+    <a class="card" href="animations.html">
+      <div class="emoji">🎬</div>
+      <div class="tag blue">All chapters</div>
+      <h3>Manim Animations</h3>
+      <p>Narrated, animated explanations of the CLT, the Law of Large Numbers,
+      percentiles, joint distributions, and least squares.</p>
+    </a>
+    <a class="card" href="pdf/Probability_and_Statistics_Coursebook.pdf">
+      <div class="emoji">📘</div>
+      <div class="tag blue">Reference</div>
+      <h3>The Coursebook (PDF)</h3>
+      <p>The full 69-page set of lecture notes with worked examples that these
+      modules accompany.</p>
+    </a>
+  </div>
+
+  <div class="note blue" style="margin-top:2.4rem">
+    <b>How it works.</b> The graphs use <a href="https://plotly.com/javascript/">Plotly.js</a>
+    and a small statistics library, both running client-side — so dragging a slider
+    recomputes and redraws instantly with no round-trip to a server. The animations
+    were rendered with <a href="https://www.manim.community/">Manim</a> and embedded as
+    video. That keeps the whole site static and perfect for GitHub Pages.
+  </div>
+</main>
+
+<script src="assets/site.js"></script>
+</body>
+</html>

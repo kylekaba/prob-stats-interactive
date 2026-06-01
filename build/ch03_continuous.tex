@@ -1,0 +1,287 @@
+\chapter{Continuous Random Variables}
+\label{ch:continuous}
+
+A \emph{continuous} random variable takes values in a continuum—a waiting time,
+a length, a temperature—and no single value carries positive probability.
+Instead, probability is spread out as a \emph{density}, and probabilities of
+intervals are areas under that density. This chapter develops the continuous
+analogues of the previous chapter's ideas and surveys the uniform, normal,
+exponential, Pareto, and Weibull families.
+
+\section{Densities, Distribution Functions, and Expectation}
+
+A continuous random variable $X$ has a \emph{probability density function} (pdf)
+$f$ with $f(x)\ge 0$ and $\int_{-\infty}^{\infty}f(x)\,dx=1$. Probabilities are
+integrals of the density,
+\[
+  \Prob(a\le X\le b)=\int_a^b f(x)\,dx,
+\]
+and the \emph{cumulative distribution function} is
+$F(x)=\Prob(X\le x)=\int_{-\infty}^{x}f(t)\,dt$. Expectation and variance are the
+continuous counterparts of the discrete formulas, with sums replaced by
+integrals:
+\[
+  \E[X]=\int_{-\infty}^{\infty} x f(x)\,dx,\qquad
+  \Var(X)=\E[X^2]-(\E[X])^2.
+\]
+The \emph{median} $m$ splits the area in half: $\int_{-\infty}^m f(x)\,dx=\tfrac12$.
+
+\begin{example}[Reading probabilities off a cdf]
+Suppose $F(x)=x^2$ for $0\le x\le 1$. Find $\Prob(\tfrac12\le X\le\tfrac34)$.
+
+\solution Probabilities of intervals are differences of the cdf:
+\[
+  \Prob(\tfrac12\le X\le\tfrac34)=F(\tfrac34)-F(\tfrac12)=\tfrac{9}{16}-\tfrac14=\tfrac{5}{16}. \qedhere
+\]
+\end{example}
+
+\begin{example}[From a piecewise density to its cdf]
+Let $X$ have density $f(x)=\tfrac14$ on $0<x<1$, $f(x)=\tfrac38$ on $3<x<5$, and
+$f(x)=0$ otherwise. Find the cdf.
+
+\solution Integrate the density from the left, accumulating area. On $[0,1]$ the
+area grows like $\tfrac14 x$, reaching $\tfrac14$ at $x=1$; nothing accumulates
+on $[1,3]$; on $[3,5]$ the area grows by $\tfrac38(x-3)$ on top of the
+$\tfrac14$ already banked. Hence
+\[
+  F(x)=
+  \begin{cases}
+   0, & x\le 0,\\
+   \tfrac14 x, & 0<x<1,\\
+   \tfrac14, & 1\le x\le 3,\\
+   \tfrac38 x-\tfrac78, & 3<x<5,\\
+   1, & x\ge 5.
+  \end{cases}
+\]
+The flat stretch on $[1,3]$ reflects the gap where $X$ places no probability.
+\end{example}
+
+\begin{example}[Mean and variance of a polynomial density]
+Let $f(x)=3x^2$ for $0\le x\le 1$ and $0$ otherwise. Compute $\E[X]$ and
+$\Var(X)$.
+
+\solution Directly,
+\[
+  \E[X]=\int_0^1 x\cdot 3x^2\,dx=\Bigl[\tfrac34 x^4\Bigr]_0^1=\tfrac34,
+\]
+and $\E[X^2]=\int_0^1 3x^4\,dx=\tfrac35$, so
+\[
+  \Var(X)=\tfrac35-\Bigl(\tfrac34\Bigr)^2=\tfrac35-\tfrac{9}{16}=\tfrac{3}{80}. \qedhere
+\]
+\end{example}
+
+\begin{example}[An expectation requiring integration by parts]
+The lifetime of a vacuum tube has density $f(x)=xe^{-x}$ for $x\ge 0$. Find the
+expected lifetime.
+
+\solution We must integrate $\E[X]=\int_0^\infty x^2 e^{-x}\,dx$. Integrating by
+parts once turns $x^2$ into $2x$, and a second time turns $2x$ into $2$:
+\[
+  \int_0^\infty x^2 e^{-x}\,dx
+   = \bigl[-x^2 e^{-x}\bigr]_0^\infty + \int_0^\infty 2x e^{-x}\,dx
+   = 0 + 2\int_0^\infty x e^{-x}\,dx = 2.
+\]
+So the expected lifetime is $2$ hours.
+\end{example}
+
+\section{The Uniform Distribution}
+
+If $X$ is equally likely to fall anywhere in $[\alpha,\beta]$, it is
+\emph{uniform}, $X\sim\Unif(\alpha,\beta)$, with constant density
+$f(x)=1/(\beta-\alpha)$ on $[\alpha,\beta]$.
+
+\begin{example}[Mean and variance of the uniform]
+For $X\sim\Unif(\alpha,\beta)$, show $\E[X]=\tfrac{\alpha+\beta}{2}$ and
+$\Var(X)=\tfrac{(\beta-\alpha)^2}{12}$.
+
+\solution The mean is
+\[
+  \E[X]=\int_\alpha^\beta \frac{x}{\beta-\alpha}\,dx
+   =\frac{\beta^2-\alpha^2}{2(\beta-\alpha)}=\frac{\alpha+\beta}{2},
+\]
+the midpoint, as intuition demands. Computing $\E[X^2]=\frac{\beta^3-\alpha^3}{3(\beta-\alpha)}=\frac{\alpha^2+\alpha\beta+\beta^2}{3}$ and subtracting $(\tfrac{\alpha+\beta}{2})^2$ gives, after simplification, $\Var(X)=\frac{(\beta-\alpha)^2}{12}$.
+\end{example}
+
+\begin{example}[Waiting for a bus]
+You reach a stop at 10:00 knowing the bus arrives at a time
+$X\sim\Unif(0,30)$ minutes after 10:00. (a)~Find the probability you wait more
+than $10$ minutes. (b)~Given that the bus has not come by 10:15, find the
+probability you wait at least $10$ more minutes.
+
+\solution (a)~$\Prob(X>10)=\int_{10}^{30}\tfrac1{30}\,dx=\tfrac23$. (b)~We want
+$\Prob(X\ge 25\given X>15)$. By definition of conditional probability and since
+$\{X\ge 25\}\subseteq\{X>15\}$,
+\[
+  \Prob(X\ge 25\given X>15)=\frac{\Prob(X\ge 25)}{\Prob(X>15)}
+   =\frac{1/6}{1/2}=\tfrac13.
+\]
+Unlike the exponential below, the uniform is \emph{not} memoryless: waiting
+already reshapes the remaining wait.
+\end{example}
+
+\section{The Normal Distribution}
+
+The \emph{normal} (Gaussian) distribution $\N(\mu,\sigma^2)$ has the
+bell-shaped density
+\[
+  f(x)=\frac{1}{\sigma\sqrt{2\pi}}\,e^{-\frac12\left(\frac{x-\mu}{\sigma}\right)^2},
+\]
+with mean $\mu$ and variance $\sigma^2$. It is the most important distribution in
+statistics, partly because of the central limit theorem
+(Chapter~\ref{ch:limits}). Probabilities are found by standardizing—subtracting
+$\mu$ and dividing by $\sigma$ to obtain a standard normal $Z\sim\N(0,1)$—and
+consulting a table or software.
+
+\begin{example}[Setting a specification limit]
+A lightbulb's output is $\N(2000, 85^2)$ end-foot-candles. Find a lower limit
+$L$ so that only $5\%$ of bulbs fall below it, i.e.\ $\Prob(X\ge L)=0.95$.
+
+\solution We need the $5$th percentile of the distribution. Since the $5$th
+percentile of a standard normal is $-1.645$, $L=2000-1.645(85)\approx 1860$. Only
+about $5\%$ of bulbs output less than $1860$.
+\end{example}
+
+\begin{example}[Bolts out of specification]
+A machine makes bolts with diameter $\N(1.20,\,0.005^2)$ inches; the
+specification is $1.19$ to $1.21$ inches. What fraction fail?
+
+\solution The limits sit exactly two standard deviations either side of the
+mean, since $(1.21-1.20)/0.005=2$. The probability of landing outside
+$\mu\pm 2\sigma$ is about $0.0455$, so roughly $4.5\%$ of bolts are out of
+specification.
+\end{example}
+
+\begin{example}[Chips, and a binomial built on a normal]
+Computer-chip lifetimes are $\N(4.4\times10^6,\,(3\times10^5)^2)$ hours.
+(a)~A buyer wants at least $90\%$ of chips to last $4.0\times10^6$ hours; is the
+supplier acceptable? (b)~In a batch of $100$ chips, what is the chance at least
+$4$ last less than $3.8\times10^6$ hours?
+
+\solution (a)~Standardizing, $\Prob(X\ge 4.0\times10^6)\approx 0.909$, so just
+over $90\%$ qualify—acceptable. (b)~First $\Prob(X<3.8\times10^6)\approx 0.023$.
+Now let $Y\sim\Bin(100,0.023)$ count short-lived chips in the batch; then
+\[
+  \Prob(Y\ge 4)=1-\sum_{k=0}^{3}\binom{100}{k}(0.023)^k(0.977)^{100-k}\approx 0.199.
+\]
+This example shows the two models cooperating: the normal supplies the
+per-chip probability, which then drives a binomial count over the batch.
+\end{example}
+
+\section{The Exponential Distribution and Memorylessness}
+
+The \emph{exponential} distribution $\Exp(\lambda)$ models waiting times for
+events that occur at a constant rate $\lambda$, with density
+$f(x)=\lambda e^{-\lambda x}$ for $x\ge 0$ and cdf $F(x)=1-e^{-\lambda x}$. Its
+mean is $1/\lambda$; if a process has mean waiting time $\mu$, then
+$\lambda=1/\mu$.
+
+\begin{example}[The mean of an exponential]
+Show that $X\sim\Exp(\lambda)$ has $\E[X]=1/\lambda$.
+
+\solution Integration by parts with $u=x$, $dv=\lambda e^{-\lambda x}dx$ gives
+$\E[X]=\bigl[-xe^{-\lambda x}\bigr]_0^\infty+\int_0^\infty e^{-\lambda x}\,dx=1/\lambda$,
+as computed in Chapter~\ref{ch:prereq}.
+\end{example}
+
+\begin{example}[Finding a median]
+Find the median of $X$ with density $f(x)=e^{-x}$, $x\ge 0$ (i.e.\ $\Exp(1)$).
+
+\solution Solve $\int_0^m e^{-x}\,dx=\tfrac12$, i.e.\ $1-e^{-m}=\tfrac12$, giving
+$e^{-m}=\tfrac12$ and $m=\ln 2\approx 0.693$. Note the median is smaller than the
+mean $1$: the exponential is right-skewed.
+\end{example}
+
+The exponential's defining feature is \emph{memorylessness}:
+$\Prob(X>s+t\given X>s)=\Prob(X>t)$. A used item, conditioned on having survived,
+is statistically as good as new.
+
+\begin{example}[Repair times]
+The time to repair a machine is $\Exp(\tfrac12)$ (mean $2$ hours). (a)~Find
+$\Prob(X>2)$. (b)~Find the conditional probability the repair lasts at least $3$
+hours given it has already exceeded $2$.
+
+\solution (a)~$\Prob(X>2)=e^{-\frac12\cdot 2}=e^{-1}\approx 0.368$. (b)~By
+memorylessness, $\Prob(X>3\given X>2)=\Prob(X>1)=e^{-1/2}\approx 0.607$.
+\end{example}
+
+\begin{example}[A used radio]
+A radio's lifetime is $\Exp(\tfrac18)$ (mean $8$ years). You buy it \emph{used},
+not knowing its age. What is the probability it lasts another $10$ years?
+
+\solution It seems we lack information—how old is the radio?—but memorylessness
+makes the age irrelevant. The answer is simply
+$\Prob(X\ge 10)=e^{-10/8}=e^{-5/4}\approx 0.287$.
+\end{example}
+
+\section{Heavy Tails: The Pareto Distribution}
+
+The \emph{Pareto} distribution $\Par(\alpha)$ has density
+$f(x)=\alpha/x^{\alpha+1}$ for $x\ge 1$. Its slowly decaying (``heavy'') tail can
+make moments fail to exist—a phenomenon worth seeing at least once.
+
+\begin{example}[Median of a Pareto]
+Find the median of a $\Par(1)$ distribution, whose density is $f(x)=1/x^2$ for
+$x\ge 1$.
+
+\solution Solve $\int_1^m x^{-2}\,dx=\tfrac12$. Since the integral is
+$1-\tfrac1m$, we need $1-\tfrac1m=\tfrac12$, so $m=2$.
+\end{example}
+
+\begin{example}[A finite mean but infinite variance]
+Let $X$ have density $f(x)=2/x^3$ for $x\ge 1$ (this is $\Par(2)$). Find $\E[X]$
+and $\Var(X)$.
+
+\solution The mean converges:
+$\E[X]=\int_1^\infty x\cdot\tfrac{2}{x^3}\,dx=\int_1^\infty 2x^{-2}\,dx=2$. But
+\[
+  \E[X^2]=\int_1^\infty x^2\cdot\tfrac{2}{x^3}\,dx=\int_1^\infty \tfrac2x\,dx
+   =\bigl[2\ln x\bigr]_1^\infty=\infty,
+\]
+so the variance is \emph{infinite}. Heavy-tailed data can have a well-defined
+center yet unbounded spread—a warning for any analysis that assumes finite
+variance.
+\end{example}
+
+\section{Transforming Random Variables}
+
+To find the distribution of $Y=g(X)$ for an increasing $g$, work with cdfs:
+\[
+  F_Y(y)=\Prob(Y\le y)=\Prob\bigl(X\le g^{-1}(y)\bigr)=F_X\bigl(g^{-1}(y)\bigr).
+\]
+
+\begin{example}[Rescaling a uniform]
+Let $U\sim\Unif(0,1)$. Find the distribution of $V=rU+s$ for constants $r>0$,
+$s$.
+
+\solution For $s\le v\le r+s$,
+\[
+  F_V(v)=\Prob(rU+s\le v)=\Prob\Bigl(U\le\tfrac{v-s}{r}\Bigr)=\tfrac{v-s}{r},
+\]
+which is the cdf of a $\Unif(s,\,r+s)$ distribution. A linear change of scale
+turns one uniform into another. (For instance $V=2U+7$ is $\Unif(7,9)$.)
+\end{example}
+
+\begin{example}[Rescaling an exponential]
+Let $X\sim\Exp(\lambda)$. Show that $Y=\lambda X\sim\Exp(1)$.
+
+\solution Using $F_X(x)=1-e^{-\lambda x}$,
+\[
+  F_Y(y)=\Prob(\lambda X\le y)=\Prob\bigl(X\le y/\lambda\bigr)=1-e^{-\lambda(y/\lambda)}=1-e^{-y},
+\]
+the cdf of $\Exp(1)$. Multiplying an exponential by its own rate produces the
+standard ``rate-one'' exponential.
+\end{example}
+
+\begin{example}[Building the Weibull]
+Let $X\sim\Exp(1)$ and let $\alpha,\lambda>0$. Find the cdf of
+$W=X^{1/\alpha}/\lambda$.
+
+\solution From $F_X(x)=1-e^{-x}$,
+\[
+  F_W(w)=\Prob\Bigl(\tfrac{X^{1/\alpha}}{\lambda}\le w\Bigr)
+   =\Prob\bigl(X\le(\lambda w)^\alpha\bigr)=1-e^{-(\lambda w)^\alpha},\qquad w>0.
+\]
+This is the \emph{Weibull} distribution with parameters $\alpha$ and $\lambda$,
+widely used in reliability analysis because its shape parameter $\alpha$ lets the
+failure rate increase or decrease over time.
+\end{example}

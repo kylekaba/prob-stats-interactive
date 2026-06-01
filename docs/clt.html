@@ -1,0 +1,129 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>Central Limit Theorem — Interactive</title>
+<link rel="stylesheet" href="assets/style.css">
+<script src="https://cdn.plot.ly/plotly-2.35.2.min.js" charset="utf-8"></script>
+<script>window.MathJax={tex:{inlineMath:[['\\(','\\)']]},svg:{fontCache:'global'}};</script>
+<script src="https://cdn.jsdelivr.net/npm/mathjax@3/es5/tex-mml-chtml.js" async></script>
+</head>
+<body data-page="clt">
+<main class="wrap narrow">
+  <h1>The Central Limit Theorem</h1>
+  <p class="lead">The CLT says the <em>average</em> of many independent draws is
+  approximately normal — no matter how un-normal the source is. Pick a lopsided
+  source below, raise the sample size, and watch the histogram of sample means snap
+  into a bell curve (Chapter&nbsp;6).</p>
+
+  <div class="widget">
+    <div class="controls">
+      <div class="control">
+        <label for="src">Source distribution</label>
+        <select id="src">
+          <option value="skewed">Heavily right-skewed</option>
+          <option value="exponential">Exponential</option>
+          <option value="uniform">Uniform</option>
+          <option value="bernoulli">Bernoulli (coin)</option>
+          <option value="bimodal">Bimodal (two humps)</option>
+        </select>
+      </div>
+      <div class="control">
+        <label for="n">Sample size n <span class="val" id="val-n">5</span></label>
+        <input type="range" id="n" min="1" max="100" step="1" value="5">
+      </div>
+      <div class="control">
+        <label for="reps"># of sample means <span class="val" id="val-reps">3000</span></label>
+        <input type="range" id="reps" min="200" max="8000" step="200" value="3000">
+      </div>
+      <div class="control" style="justify-content:flex-end">
+        <button class="mini" id="resample">🎲 Resample</button>
+      </div>
+    </div>
+
+    <h3 style="margin-top:1.2rem">① One draw from the source</h3>
+    <div id="srcPlot" class="plot" style="min-height:240px"></div>
+
+    <h3>② The distribution of the sample mean \(\bar X_n\)</h3>
+    <div id="meanPlot" class="plot" style="min-height:300px"></div>
+
+    <div class="readout" id="readout"></div>
+  </div>
+
+  <div class="note blue">
+    <b>What to notice.</b> At \(n=1\) the bottom histogram simply copies the source —
+    skew and all. As \(n\) grows, two things happen together: the histogram becomes
+    <em>symmetric and bell-shaped</em>, and it gets <em>narrower</em>, because the
+    standard error \(\sigma/\sqrt n\) shrinks. The dashed curve is the exact normal
+    the CLT predicts.
+  </div>
+</main>
+
+<script src="assets/stats.js"></script>
+<script>
+const S = window.Stats;
+const COL="#1f5fa8", COL2="#2a8f5a", RED="#b03030";
+let rng = S.makeRNG(12345);
+
+const els = {
+  src:document.getElementById("src"), n:document.getElementById("n"),
+  reps:document.getElementById("reps"),
+  valN:document.getElementById("val-n"), valReps:document.getElementById("val-reps"),
+};
+
+function drawSource(name){
+  // show many raw draws as a histogram (the population shape)
+  const draws=[]; for(let i=0;i<6000;i++) draws.push(S.samplers[name](rng));
+  Plotly.react("srcPlot",
+    [{x:draws,type:"histogram",histnorm:"probability density",
+      marker:{color:"rgba(31,95,168,.55)",line:{color:"#fff",width:.5}},nbinsx:50}],
+    {margin:{l:50,r:15,t:8,b:35},height:240,
+     xaxis:{title:"x value of a single draw",gridcolor:"#e6ecf3"},
+     yaxis:{title:"density",gridcolor:"#e6ecf3"},
+     paper_bgcolor:"rgba(0,0,0,0)",plot_bgcolor:"rgba(0,0,0,0)",showlegend:false,bargap:0.02},
+    {displayModeBar:false,responsive:true});
+}
+
+function drawMeans(){
+  const name=els.src.value, n=+els.n.value, reps=+els.reps.value;
+  const mom=S.samplerMoments[name];
+  const means=new Array(reps);
+  for(let r=0;r<reps;r++){
+    let s=0; for(let i=0;i<n;i++) s+=S.samplers[name](rng);
+    means[r]=s/n;
+  }
+  const empMean=S.mean(means), empSE=S.std(means);
+  const theoSE=Math.sqrt(mom.v/n);
+  // normal overlay predicted by the CLT
+  const lo=mom.m-4*theoSE, hi=mom.m+4*theoSE;
+  const xs=S.linspace(lo,hi,200), ys=xs.map(x=>S.normalPdf(x,mom.m,theoSE));
+  Plotly.react("meanPlot",[
+    {x:means,type:"histogram",histnorm:"probability density",
+      marker:{color:"rgba(42,143,90,.55)",line:{color:"#fff",width:.5}},nbinsx:45,name:"sample means"},
+    {x:xs,y:ys,type:"scatter",mode:"lines",line:{color:RED,width:2.5,dash:"dash"},
+      name:"CLT normal"},
+  ],{
+    margin:{l:50,r:15,t:8,b:40},height:300,
+    xaxis:{title:"value of the sample mean  x̄ₙ",gridcolor:"#e6ecf3",range:[lo,hi]},
+    yaxis:{title:"density",gridcolor:"#e6ecf3"},
+    paper_bgcolor:"rgba(0,0,0,0)",plot_bgcolor:"rgba(0,0,0,0)",
+    legend:{orientation:"h",y:1.12,x:1,xanchor:"right"},bargap:0.02,
+  },{displayModeBar:false,responsive:true});
+
+  document.getElementById("readout").innerHTML =
+    stat("Population mean μ",mom.m)+stat("Mean of x̄ₙ (empirical)",empMean)+
+    stat("Std. error σ/√n (theory)",theoSE)+stat("Spread of x̄ₙ (empirical)",empSE);
+}
+function stat(l,v){return '<div class="stat"><b>'+l+'</b><br><span class="num">'+v.toFixed(3)+'</span></div>';}
+
+function redraw(){ drawSource(els.src.value); drawMeans(); }
+els.src.addEventListener("change",redraw);
+els.n.addEventListener("input",()=>{els.valN.textContent=els.n.value; drawMeans();});
+els.reps.addEventListener("input",()=>{els.valReps.textContent=els.reps.value; drawMeans();});
+document.getElementById("resample").addEventListener("click",()=>{rng=S.makeRNG((Math.random()*1e9)|0); redraw();});
+redraw();
+</script>
+<script src="assets/site.js"></script>
+</body>
+</html>

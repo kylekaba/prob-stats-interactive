@@ -1,0 +1,85 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>Animations — Probability &amp; Statistics</title>
+<link rel="stylesheet" href="assets/style.css">
+</head>
+<body data-page="animations">
+<main class="wrap narrow">
+  <h1>Animated explanations</h1>
+  <p class="lead">Five short, narrated-by-motion animations built with
+  <a href="https://www.manim.community/">Manim</a> — the same engine behind
+  3Blue1Brown — each unpacking one big idea from the course. Press play, or open the
+  matching interactive page to drive it yourself.</p>
+
+  <div class="video-card">
+    <video controls preload="metadata" poster="animations/videos/clt.jpg" playsinline>
+      <source src="animations/videos/clt.mp4" type="video/mp4">
+    </video>
+    <div class="vcap">
+      <h3>The Central Limit Theorem</h3>
+      <p>A lopsided source distribution on the left; on the right, the distribution
+      of the sample mean tightens into a bell curve as the sample size grows from
+      1 to 40. → <a href="clt.html">Try the interactive version</a></p>
+    </div>
+  </div>
+
+  <div class="video-card">
+    <video controls preload="metadata" poster="animations/videos/lln.jpg" playsinline>
+      <source src="animations/videos/lln.mp4" type="video/mp4">
+    </video>
+    <div class="vcap">
+      <h3>The Law of Large Numbers</h3>
+      <p>Four running-average paths of coin flips wander early on, then are all
+      reeled in toward the true mean of 0.5. → <a href="lln.html">Interactive version</a></p>
+    </div>
+  </div>
+
+  <div class="video-card">
+    <video controls preload="metadata" poster="animations/videos/percentiles.jpg" playsinline>
+      <source src="animations/videos/percentiles.mp4" type="video/mp4">
+    </video>
+    <div class="vcap">
+      <h3>Percentiles, Quartiles &amp; the IQR</h3>
+      <p>From a strip of sorted data, the quartiles and median are marked and a
+      boxplot is assembled — with the interquartile range braced underneath.
+      → <a href="eda.html">Interactive version</a></p>
+    </div>
+  </div>
+
+  <div class="video-card">
+    <video controls preload="metadata" poster="animations/videos/joint.jpg" playsinline>
+      <source src="animations/videos/joint.mp4" type="video/mp4">
+    </video>
+    <div class="vcap">
+      <h3>Joint Distributions &amp; Correlation</h3>
+      <p>A cloud of points rotates from a strong positive correlation to a strong
+      negative one and back to independence as the dial turns from
+      \(\rho=+0.9\) to \(\rho=-0.9\). → <a href="joint.html">Interactive version</a></p>
+    </div>
+  </div>
+
+  <div class="video-card">
+    <video controls preload="metadata" poster="animations/videos/least_squares.jpg" playsinline>
+      <source src="animations/videos/least_squares.mp4" type="video/mp4">
+    </video>
+    <div class="vcap">
+      <h3>The Method of Least Squares</h3>
+      <p>A poorly-placed line swings into position as the sum of its squared
+      residuals (the red sticks) shrinks to the minimum — the least-squares line.
+      → <a href="regression.html">Interactive version</a></p>
+    </div>
+  </div>
+
+  <div class="note blue">
+    <b>Want to re-render or tweak these?</b> The Manim source for every scene lives in
+    <code>manim/scenes.py</code> in the repository. Each is a small, self-contained
+    <code>Scene</code> class you can edit and re-render with
+    <code>manim -qm scenes.py CLTScene</code>.
+  </div>
+</main>
+<script src="assets/site.js"></script>
+</body>
+</html>

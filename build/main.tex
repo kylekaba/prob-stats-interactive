@@ -1,0 +1,229 @@
+\documentclass[11pt,openany]{book}
+
+% ----------------------------------------------------------------------
+% Packages
+% ----------------------------------------------------------------------
+\usepackage[T1]{fontenc}
+\usepackage{lmodern}
+\usepackage[utf8]{inputenc}
+\usepackage[margin=1in]{geometry}
+\usepackage{amsmath,amssymb,amsthm,mathtools}
+\usepackage{graphicx}
+\usepackage{xcolor}
+\usepackage{booktabs}
+\usepackage{array}
+\usepackage{enumitem}
+\usepackage{microtype}
+\usepackage{tikz}
+\usetikzlibrary{arrows.meta,positioning,shapes.geometric,calc}
+\usepackage[most]{tcolorbox}
+\usepackage{titlesec}
+\usepackage{fancyhdr}
+\usepackage[hidelinks]{hyperref}
+\usepackage{caption}
+
+\captionsetup{font=small,labelfont=bf,labelsep=period}
+\graphicspath{{figures/}}
+
+% ----------------------------------------------------------------------
+% Colors
+% ----------------------------------------------------------------------
+\definecolor{accent}{HTML}{1F5FA8}
+\definecolor{accentdark}{HTML}{16406F}
+\definecolor{accentlight}{HTML}{EAF1FA}
+\definecolor{exgreen}{HTML}{2A8F5A}
+\definecolor{exgreenlight}{HTML}{EAF5EF}
+\definecolor{warmred}{HTML}{B03030}
+\definecolor{goldline}{HTML}{C9A227}
+\definecolor{softgrey}{HTML}{F4F4F4}
+
+% ----------------------------------------------------------------------
+% Theorem-like environments
+% ----------------------------------------------------------------------
+\theoremstyle{definition}
+\newtheorem{definition}{Definition}[chapter]
+\newtheorem{principle}[definition]{Principle}
+\newtheorem{remark}[definition]{Remark}
+
+\theoremstyle{plain}
+\newtheorem{theorem}[definition]{Theorem}
+\newtheorem{proposition}[definition]{Proposition}
+\newtheorem{lemma}[definition]{Lemma}
+\newtheorem{corollary}[definition]{Corollary}
+
+% Boxed "key idea" definition
+\newtcolorbox{keybox}[1][]{
+  enhanced, breakable, colback=accentlight, colframe=accent,
+  boxrule=0.8pt, arc=2pt, left=8pt, right=8pt, top=6pt, bottom=6pt,
+  fonttitle=\bfseries\color{white},
+  coltitle=white, attach boxed title to top left={xshift=8pt,yshift=-2pt},
+  boxed title style={colback=accent,arc=1pt}, #1}
+
+% Example environment (counter per chapter)
+\newcounter{example}[chapter]
+\renewcommand{\theexample}{\thechapter.\arabic{example}}
+
+\newtcolorbox{exbox}[1][]{
+  enhanced, breakable, colback=exgreenlight, colframe=exgreen,
+  boxrule=0.7pt, arc=2pt, left=7pt, right=7pt, top=5pt, bottom=6pt,
+  before skip=10pt, after skip=10pt,
+  borderline west={3pt}{0pt}{exgreen},
+  #1}
+
+% \begin{example}{title} ... \end{example}
+\newenvironment{example}[1][]{%
+  \refstepcounter{example}%
+  \begin{exbox}%
+  {\bfseries\color{exgreen}Example~\theexample}%
+  \ifx\\#1\\\else\ \textbf{(#1)}\fi\par\smallskip\noindent\ignorespaces}{%
+  \end{exbox}}
+
+% Solution marker
+\newcommand{\solution}{\par\smallskip\noindent\textit{\color{accentdark}Solution.}\ \ignorespaces}
+
+% ----------------------------------------------------------------------
+% Section / chapter styling
+% ----------------------------------------------------------------------
+\titleformat{\chapter}[display]
+  {\normalfont\huge\bfseries\color{accentdark}}
+  {\filright\large\color{accent}\MakeUppercase{\chaptertitlename}\ \thechapter}
+  {6pt}{\Huge}
+\titlespacing*{\chapter}{0pt}{6pt}{22pt}
+
+\titleformat{\section}
+  {\normalfont\Large\bfseries\color{accentdark}}{\thesection}{0.6em}{}
+\titleformat{\subsection}
+  {\normalfont\large\bfseries\color{accent}}{\thesubsection}{0.6em}{}
+
+\setlength{\parskip}{0.45em}
+\setlength{\parindent}{0pt}
+
+% Header / footer
+\pagestyle{fancy}
+\fancyhf{}
+\renewcommand{\headrulewidth}{0.4pt}
+\fancyhead[L]{\small\itshape\nouppercase{\leftmark}}
+\fancyhead[R]{\small\thepage}
+
+% ----------------------------------------------------------------------
+% Math shortcuts
+% ----------------------------------------------------------------------
+\newcommand{\E}{\mathbb{E}}
+\newcommand{\Var}{\mathrm{Var}}
+\newcommand{\Cov}{\mathrm{Cov}}
+\newcommand{\R}{\mathbb{R}}
+\newcommand{\given}{\,|\,}
+\newcommand{\Prob}{\mathbb{P}}
+\newcommand{\Ber}{\mathrm{Ber}}
+\newcommand{\Bin}{\mathrm{Bin}}
+\newcommand{\Geo}{\mathrm{Geo}}
+\newcommand{\Pois}{\mathrm{Pois}}
+\newcommand{\Exp}{\mathrm{Exp}}
+\newcommand{\Unif}{\mathrm{Unif}}
+\newcommand{\Mult}{\mathrm{Mult}}
+\newcommand{\Par}{\mathrm{Par}}
+\newcommand{\N}{\mathcal{N}}
+\newcommand{\xbar}{\bar{x}}
+\newcommand{\ybar}{\bar{y}}
+\newcommand{\Xbar}{\bar{X}}
+\newcommand{\Ybar}{\bar{Y}}
+\newcommand{\eqdef}{\vcentcolon=}
+\DeclareMathOperator{\Med}{Med}
+\DeclareMathOperator{\MAD}{MAD}
+\DeclareMathOperator*{\argmax}{arg\,max}
+\DeclareMathOperator*{\argmin}{arg\,min}
+
+% ----------------------------------------------------------------------
+\begin{document}
+\frontmatter
+
+% ===================== TITLE PAGE =====================
+\begin{titlepage}
+\centering
+\vspace*{1.5cm}
+{\color{accent}\rule{\linewidth}{1.5pt}}\par
+\vspace{0.8cm}
+{\Huge\bfseries\color{accentdark} Probability \& Statistics}\par
+\vspace{0.4cm}
+{\LARGE\color{accent} Lecture Notes with Worked Examples}\par
+\vspace{0.5cm}
+{\large A One-Semester Course}\par
+\vspace{0.4cm}
+{\color{accent}\rule{\linewidth}{1.5pt}}\par
+\vspace{1.6cm}
+
+\begin{tikzpicture}[scale=1.0]
+  % a small decorative normal curve + scatter motif
+  \begin{scope}
+  \draw[accent,line width=1pt] plot[domain=-3:3,samples=80]
+     (\x, {2.2*exp(-\x*\x/2)});
+  \draw[->,gray] (-3.4,0)--(3.4,0);
+  \fill[warmred] (-1,0.05) circle (1pt) (0.4,0.05) circle(1pt)
+     (1.6,0.05) circle(1pt) (-0.3,0.05) circle(1pt) (2.1,0.05) circle(1pt)
+     (-2,0.05) circle(1pt) (0.9,0.05) circle(1pt);
+  \end{scope}
+\end{tikzpicture}
+
+\vspace{1.6cm}
+{\large A unified treatment of exploratory data analysis, probability,\\[2pt]
+statistical inference, maximum likelihood, regression,\\[2pt]
+and goodness-of-fit testing.}\par
+\vfill
+{\large Course notes and integrated problem set}\par
+\vspace{0.3cm}
+{\color{accent}\rule{0.5\linewidth}{0.8pt}}
+\end{titlepage}
+
+% ===================== PREFACE =====================
+\chapter*{About These Notes}
+\addcontentsline{toc}{chapter}{About These Notes}
+\markboth{About These Notes}{About These Notes}
+
+These notes assemble the material of a one-semester introductory course in
+probability and statistics into a single self-contained volume. The aim is to
+present the theory and a large stock of fully worked examples \emph{side by
+side}, so that every idea is immediately illustrated by concrete computation.
+
+The book is organized into three movements. The first
+(Chapters~\ref{ch:prereq}--\ref{ch:limits}) develops the language of
+probability: sets and counting, conditional probability and Bayes' rule,
+discrete and continuous random variables, joint distributions, and the
+classical limit theorems. The second (Chapter~\ref{ch:eda}) turns to data
+itself through exploratory data analysis. The third
+(Chapters~\ref{ch:inference}--\ref{ch:gof}) builds the machinery of
+statistical inference: point estimation, confidence intervals, maximum
+likelihood, least-squares regression, and hypothesis testing culminating in
+goodness-of-fit tests.
+
+Every worked example is woven into the section whose ideas it exercises. A
+problem about joint distributions appears beside the discussion of joint
+distributions; a maximum-likelihood computation appears beside the maximum
+likelihood principle. Where the original course used the statistical
+software \textsf{R} for computation, the corresponding numerical answers are
+simply stated, since the emphasis here is on the underlying reasoning rather
+than on software commands.
+
+A short note on figures: the plots in these notes were regenerated from the
+underlying datasets (the black cherry tree volumes, the town mortality and
+calcium measurements, and the small numerical datasets that appear in the
+examples). The Old Faithful illustrations use a dataset constructed to match
+the summary statistics quoted in the text and are meant to be illustrative.
+
+\tableofcontents
+
+\mainmatter
+
+\input{ch00_prereq}
+\input{ch01_probability}
+\input{ch02_discrete}
+\input{ch03_continuous}
+\input{ch04_joint}
+\input{ch05_limits}
+\input{ch06_eda}
+\input{ch07_inference}
+\input{ch08_estimation}
+\input{ch09_mle}
+\input{ch10_leastsquares}
+\input{ch11_goodnessfit}
+
+\end{document}

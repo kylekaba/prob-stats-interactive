@@ -1,0 +1,29 @@
+# ============================================================
+#  Whitelist repo: ignore EVERYTHING at the root by default,
+#  then track only the website and its own sources.
+#  (Keeps third-party textbooks, original answer keys, homeworks,
+#   large source PDFs, and archives OUT of the public repo.)
+# ============================================================
+/*
+
+# --- track only these top-level entries ---
+!/docs/
+!/manim/
+!/build/
+!/README.md
+!/.gitignore
+
+# --- within the tracked dirs, drop heavy / generated intermediates ---
+manim/media/
+build/text/
+build/*.log
+build/*.aux
+build/*.out
+build/*.toc
+build/*.synctex.gz
+build/*.pdf
+
+# --- OS / editor cruft, anywhere ---
+.DS_Store
+__pycache__/
+*.swp

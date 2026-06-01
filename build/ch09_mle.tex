@@ -1,0 +1,229 @@
+\chapter{Maximum Likelihood Estimation}
+\label{ch:mle}
+
+The estimators of the previous chapter were built one at a time, by ad hoc
+reasoning. We now meet a single, general recipe for producing good
+estimators—\emph{maximum likelihood}. The principle is disarmingly simple:
+choose the parameter value that makes the observed data most probable.
+
+\section{The Maximum Likelihood Principle}
+
+\begin{principle}[Maximum likelihood]
+Given a dataset, estimate the unknown parameter by the value that makes the
+observed data as likely as possible.
+\end{principle}
+
+A small story fixes the idea. A dealer is offered one of two batches of chips:
+one is about $10\%$ defective, the other about $50\%$, but the seller has lost
+track of which is which. The dealer tests $10$ chips from a batch and finds
+exactly one defective. Which batch is it more likely to be?
+
+\begin{example}[Which batch?]
+Test $10$ chips; let $R_i=1$ if chip $i$ is defective. With one defective among
+ten, the probability of the observed pattern is $p(1-p)^9$. Compare the two
+candidate values of $p$:
+\[
+  \text{($10\%$ batch)}\ \ (0.1)(0.9)^9\approx 0.039,\qquad
+  \text{($50\%$ batch)}\ \ (0.5)(0.5)^9\approx 0.00098.
+\]
+The observed data are about forty times more likely under the $10\%$ batch, so
+the dealer should believe it is that one. This is maximum likelihood reasoning in
+miniature.
+
+If instead the \emph{first three} chips were defective, the data probability
+becomes $p^3(1-p)^7$, now favoring the $50\%$ batch ($\approx 0.00098$ versus
+$\approx 0.00048$): three early defectives are better explained by the
+high-defect batch. The data, not a prior hunch, decide.
+\end{example}
+
+\begin{example}[Which die?]
+A die $D_1$ has five red faces and one white; $D_2$ has one red and five white.
+One die is chosen and rolled until red appears, three separate times, giving
+first-red on the $3$rd, $5$th, and $4$th rolls. Which die is it likely to be?
+
+\solution The rolls are independent $\Geo(p)$ with $p$ the chance of red, so the
+likelihood is
+\[
+  L(p)=(1-p)^2 p\cdot(1-p)^4 p\cdot(1-p)^3 p=p^3(1-p)^9.
+\]
+For $D_1$ ($p=\tfrac56$): $L(\tfrac56)\approx 5.74\times10^{-8}$. For $D_2$
+($p=\tfrac16$): $L(\tfrac16)\approx 8.97\times10^{-4}$. The data are vastly more
+likely under $D_2$, so it is almost surely the mostly-white die.
+\end{example}
+
+\section{The Likelihood Function}
+
+For a sample $x_1,\dots,x_n$ from a distribution with parameter $\theta$, the
+\emph{likelihood function} is the probability (discrete case) or density
+(continuous case) of the data, viewed as a function of $\theta$:
+\[
+  L(\theta)=\prod_{i=1}^n p_\theta(x_i)\quad\text{(discrete)},\qquad
+  L(\theta)=\prod_{i=1}^n f_\theta(x_i)\quad\text{(continuous)}.
+\]
+The \emph{maximum likelihood estimate} (MLE) is the maximizer
+$\hat\theta=\argmax_\theta L(\theta)$.
+
+\begin{example}[The exponential rate]
+For a sample from $\Exp(\lambda)$, find the MLE of $\lambda$.
+
+\solution The likelihood is
+\[
+  L(\lambda)=\prod_{i=1}^n\lambda e^{-\lambda x_i}=\lambda^n e^{-\lambda\sum x_i}.
+\]
+Differentiating and setting $L'(\lambda)=0$ gives $1-\lambda\xbar_n=0$, so the
+MLE is $\hat\lambda=1/\Xbar_n$. (One checks the second derivative is negative
+there, confirming a maximum.)
+\end{example}
+
+\begin{example}[An endpoint that defies calculus]
+A sample $x_1,x_2,x_3=0.98,1.57,0.31$ comes from $\Unif(0,\theta)$ with $\theta$
+unknown. Find the MLE of $\theta$.
+
+\solution Each density is $1/\theta$ on $[0,\theta]$ and $0$ outside, so the
+likelihood is
+\[
+  L(\theta)=\begin{cases} 1/\theta^3, & \theta\ge\max(x_i)=1.57,\\ 0, & \theta<1.57.\end{cases}
+\]
+Differentiating would only show $L$ is decreasing where it is positive; the
+maximum sits at the \emph{boundary}. As Figure~\ref{fig:likuniform} shows,
+$L(\theta)$ jumps up to its largest value exactly at $\theta=1.57$ and decays
+thereafter, so $\hat\theta=\max(x_1,x_2,x_3)=1.57$. In general the MLE for the
+upper endpoint is $\max\{X_1,\dots,X_n\}$.
+\end{example}
+
+\begin{figure}[ht]
+  \centering
+  \includegraphics[width=0.5\linewidth]{likelihood_uniform}
+  \caption{Likelihood for a $\Unif(0,\theta)$ sample. It is zero until $\theta$
+  reaches the largest observation, then decreases—so the maximum is at the
+  boundary, where calculus alone would not find it.}
+  \label{fig:likuniform}
+\end{figure}
+
+\section{The Loglikelihood}
+
+Because $L$ is a product, differentiating it directly means repeated use of the
+product rule. Taking logarithms converts the product into a sum, which is far
+easier to differentiate; and since the logarithm is increasing, the
+\emph{loglikelihood} $\ell(\theta)=\ln L(\theta)$ has its maximum at the same
+$\theta$ as $L$.
+
+\begin{example}[Cycles to pregnancy, with censoring]
+For $100$ smoking women, the number of cycles to pregnancy is modeled as
+$\Geo(p)$; $7$ women had an unknown number exceeding $12$. Counting
+$29$ ones, $16$ twos, \dots, and $7$ values above $12$, the likelihood works out
+(up to a constant) to
+\[
+  L(p)=C\,p^{93}(1-p)^{322}.
+\]
+Find $\hat p$.
+
+\solution The constant $C$ counts arrangements and does not affect the
+maximizer. Differentiating,
+\[
+  L'(p)=C\,p^{92}(1-p)^{321}\bigl(93(1-p)-322p\bigr)=C\,p^{92}(1-p)^{321}(93-415p),
+\]
+which vanishes (in the interior) at $p=93/415\approx 0.224$. The loglikelihood
+$\ell(p)=\ln C+93\ln p+322\ln(1-p)$ has the same maximizer
+(Figure~\ref{fig:liksmokers}). Notably $0.224$ is well below the naive estimate
+$29/100=0.29$ that ignores the censored women. For the $474$ nonsmokers the
+likelihood is $\propto p^{474}(1-p)^{955}$, giving $\hat p=474/1429\approx 0.33$.
+\end{example}
+
+\begin{figure}[ht]
+  \centering
+  \includegraphics[width=\linewidth]{likelihood_smokers}
+  \caption{Likelihood $L(p)\propto p^{93}(1-p)^{322}$ (left) and its
+  loglikelihood (right) for the smokers. Both peak at the same value
+  $\hat p=93/415\approx 0.224$; the loglikelihood is easier to differentiate.}
+  \label{fig:liksmokers}
+\end{figure}
+
+\section{The Normal and Poisson MLEs}
+
+\begin{example}[Estimating the mean and standard deviation of a normal]
+For an i.i.d.\ $\N(\mu,\sigma^2)$ sample, find the MLEs of $\mu$ and $\sigma$.
+
+\solution The loglikelihood is
+\[
+  \ell(\mu,\sigma)=-n\ln\sigma-n\ln\sqrt{2\pi}-\frac{1}{2\sigma^2}\sum_{i=1}^n(x_i-\mu)^2.
+\]
+Setting $\partial\ell/\partial\mu=0$ gives $\hat\mu=\xbar_n$, and then
+$\partial\ell/\partial\sigma=0$ gives
+\[
+  \hat\sigma=\sqrt{\frac1n\sum_{i=1}^n(x_i-\xbar_n)^2}.
+\]
+(The same two answers follow if one parameter is estimated with the other held
+fixed—for instance, with $\mu$ known to be $0$ the MLE of $\sigma$ is
+$\sqrt{\tfrac1n\sum x_i^2}$.) Notice the MLE of the variance divides by $n$, not
+$n-1$; we return to this below.
+\end{example}
+
+\begin{example}[Poisson arrivals, and the probability of none]
+Packets arrive at a server, modeled as $\Pois(\mu)$ per minute. (a)~Find the MLE
+of $\mu$. (b)~Find the MLE of the probability $e^{-\mu}$ of an idle minute.
+
+\solution (a)~The likelihood is
+$L(\mu)=\prod_i \tfrac{\mu^{x_i}}{x_i!}e^{-\mu}=\tfrac{e^{-n\mu}\mu^{\sum x_i}}{\prod x_i!}$,
+with loglikelihood $\ell(\mu)=(\sum x_i)\ln\mu - n\mu - \ln\prod x_i!$. Then
+$\ell'(\mu)=\tfrac{\sum x_i}{\mu}-n=0$ gives $\hat\mu=\xbar_n$, a maximum since
+$\ell''<0$. (Applied to the South London bomb data of
+Chapter~\ref{ch:estimation}, this gives $\hat\mu=537/576\approx 0.93$, confirming
+the earlier estimate as the MLE.) (b)~By the invariance property below, the MLE
+of $e^{-\mu}$ is simply $e^{-\xbar_n}$.
+\end{example}
+
+\section{Estimating a Population Size}
+
+\begin{example}[The marked-bolt problem, revisited]
+Recall the box of $N$ bolts from Chapter~\ref{ch:discrete}. (a)~If draws
+\emph{with} replacement give a $\Geo(1/N)$ sample, find the MLE of $N$. (b)~If
+draws \emph{without} replacement give a discrete uniform sample on
+$\{1,\dots,N\}$, find the MLE of $N$.
+
+\solution (a)~The loglikelihood for $\Geo(1/N)$ data is
+$\ell(N)=-n\ln N+\bigl(\sum x_i-n\bigr)\ln(1-\tfrac1N)$; differentiating and
+solving $\ell'(N)=0$ yields, after simplification, $\hat N=\xbar_n$. (b)~For the
+discrete uniform, $L(N)=(1/N)^n$ when $N\ge\max x_i$ and $0$ otherwise, a
+decreasing function of $N$ on its support. The maximum is again at the boundary:
+$\hat N=\max\{X_1,\dots,X_n\}$, the largest value seen—just as for the continuous
+uniform endpoint.
+\end{example}
+
+\section{Properties of Maximum Likelihood Estimators}
+
+Beyond being a uniform recipe, MLEs enjoy several strong properties.
+
+\paragraph{Invariance.} If $\hat\theta$ is the MLE of $\theta$ and $g$ is an
+invertible function, then $g(\hat\theta)$ is the MLE of $g(\theta)$. (This is why
+$e^{-\xbar_n}$ is the MLE of $e^{-\mu}$, and why the MLE of $\sigma^2$ is the
+square of the MLE of $\sigma$.)
+
+\paragraph{Asymptotic unbiasedness.} An MLE may be biased in finite samples. The
+normal-variance MLE $D_n^2=\tfrac1n\sum(X_i-\Xbar_n)^2$ equals
+$\tfrac{n-1}{n}S_n^2$, so $\E[D_n^2]=\tfrac{n-1}{n}\sigma^2$—biased downward, but
+with the bias vanishing as $n\to\infty$. Under mild conditions every MLE is
+asymptotically unbiased: $\lim_{n\to\infty}\E[T_n]=\theta$.
+
+\paragraph{Asymptotic minimum variance.} The variance of any unbiased estimator
+is bounded below by the \emph{Cram\'er--Rao} bound, and MLEs attain this bound
+asymptotically: no estimator does better in large samples.
+
+\paragraph{Asymptotic normality.} The standardized MLE
+$(\hat\theta-\theta)/\widehat{\mathrm{se}}$ converges to $\N(0,1)$. Consequently
+\[
+  \hat\theta_n\pm 1.96\,\widehat{\mathrm{se}}
+\]
+is an approximate $95\%$ confidence interval for $\theta$.
+
+\begin{example}[Confidence intervals for the pregnancy parameters]
+For the $\Geo(p)$ model, the MLE $\hat p$ has standard error
+$\mathrm{se}=\sqrt{p^2(1-p)/n}$. Using asymptotic normality, build approximate
+$95\%$ intervals for the smokers ($\hat p=0.224$, $n=100$) and nonsmokers
+($\hat p=0.33$, $n=486$).
+
+\solution The interval is $\hat p\pm 1.96\sqrt{\hat p^2(1-\hat p)/n}$. For the
+smokers this gives roughly $(0.19,0.26)$, and for the nonsmokers roughly
+$(0.31,0.35)$. The two intervals do not overlap, strong evidence that smokers and
+nonsmokers really do have different per-cycle conception probabilities.
+\end{example}

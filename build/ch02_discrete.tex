@@ -1,0 +1,239 @@
+\chapter{Discrete Random Variables}
+\label{ch:discrete}
+
+A \emph{random variable} is a numerical summary of the outcome of an
+experiment—a function that assigns a number to each point of the sample space.
+A random variable is \emph{discrete} when it takes values in a finite or
+countable set, such as the number of heads in ten tosses or the number of
+trials until a success. This chapter develops the standard discrete models and
+the two numbers—expectation and variance—that summarize them.
+
+\section{Probability Mass and Distribution Functions}
+
+The \emph{probability mass function} (pmf) of a discrete random variable $X$ is
+$p_X(a)=\Prob(X=a)$. It is nonnegative and sums to one over the possible values.
+The \emph{cumulative distribution function} (cdf) accumulates the mass,
+$F_X(a)=\Prob(X\le a)$, and is a nondecreasing step function that rises from $0$
+to $1$.
+
+\section{Expectation and Variance}
+
+The \emph{expectation} (or mean) of $X$ is the probability-weighted average of
+its values,
+\[
+  \E[X]=\sum_a a\,p_X(a),
+\]
+and the \emph{variance} measures spread about the mean,
+\[
+  \Var(X)=\E\bigl[(X-\E[X])^2\bigr]=\E[X^2]-(\E[X])^2.
+\]
+The second form on the right is almost always the easier one to compute.
+Expectation is \emph{linear}: $\E[aX+bY]=a\E[X]+b\E[Y]$ for any random variables
+and constants, whether or not $X$ and $Y$ are independent.
+
+\begin{example}[A fair four-sided die]
+A four-sided die shows $X\in\{1,2,3,4\}$, each with probability $\tfrac14$.
+Compute $\E[X]$ and $\Var(X)$.
+
+\solution The mean is
+\[
+  \E[X]=\tfrac14(1+2+3+4)=\tfrac{10}{4}=\tfrac52.
+\]
+For the variance, first $\E[X^2]=\tfrac14(1+4+9+16)=\tfrac{30}{4}$, so
+\[
+  \Var(X)=\E[X^2]-(\E[X])^2=\tfrac{30}{4}-\tfrac{25}{4}=\tfrac54. \qedhere
+\]
+\end{example}
+
+\subsection{Functions of a discrete random variable}
+
+To find the distribution of $Y=g(X)$, we collect the probability of each value
+of $X$ onto the corresponding value of $Y$.
+
+\begin{example}
+Let $X$ take the values $80,90,100,110,120$, each with probability $0.2$, so
+$\E[X]=100$. Find the distribution of $Y=|X-100|$.
+
+\solution The map $x\mapsto|x-100|$ sends $80,120\mapsto 20$, sends
+$90,110\mapsto 10$, and sends $100\mapsto 0$. Collecting probabilities,
+\[
+  \Prob(Y=0)=\tfrac15,\qquad \Prob(Y=10)=\tfrac25,\qquad \Prob(Y=20)=\tfrac25. \qedhere
+\]
+\end{example}
+
+\begin{example}
+Let $X$ have pmf $p(-1)=\tfrac14,\ p(0)=\tfrac18,\ p(1)=\tfrac18,\ p(2)=\tfrac12$.
+Find the pmf of $Y=X^2$.
+
+\solution Now $x\mapsto x^2$ sends $-1$ and $1$ both to $1$, sends $0\mapsto 0$,
+and sends $2\mapsto 4$. Adding the masses that collide,
+\[
+  \Prob(Y=0)=\tfrac18,\qquad
+  \Prob(Y=1)=\tfrac14+\tfrac18=\tfrac38,\qquad
+  \Prob(Y=4)=\tfrac12. \qedhere
+\]
+\end{example}
+
+\section{The Bernoulli and Binomial Distributions}
+
+A \emph{Bernoulli} trial has two outcomes, ``success'' (coded $1$) with
+probability $p$ and ``failure'' (coded $0$) with probability $1-p$; we write
+$X\sim\Ber(p)$. The number of successes in $n$ independent Bernoulli trials, all
+with the same $p$, is \emph{binomial}, $X\sim\Bin(n,p)$, with pmf
+\[
+  \Prob(X=k)=\binom{n}{k}p^k(1-p)^{n-k},\qquad k=0,1,\dots,n.
+\]
+Its mean and variance are $\E[X]=np$ and $\Var(X)=np(1-p)$.
+
+\begin{example}[Counting defectives]
+A shop receives four lamps, each defective with probability $\tfrac13$,
+independently. Let $X$ be the number of defective lamps. What kind of
+distribution does $X$ have, and what is $\Prob(X=2)$?
+
+\solution Here $X\sim\Bin(4,\tfrac13)$. Then
+\[
+  \Prob(X=2)=\binom{4}{2}\Bigl(\tfrac13\Bigr)^2\Bigl(\tfrac23\Bigr)^2
+   =6\cdot\tfrac19\cdot\tfrac49=\tfrac{24}{81}=\tfrac{8}{27}. \qedhere
+\]
+\end{example}
+
+\begin{example}[An eight-engine bomber]
+A bomber has eight engines, each critically damaged on a mission with
+probability $0.10$, independently. It returns safely if at least six engines
+keep working. What is the probability of a safe return?
+
+\solution Let $X$ be the number of \emph{working} engines, so $X\sim\Bin(8,0.90)$
+(working is the success). A safe return is $X\ge 6$:
+\[
+  \Prob(X\ge 6)=\sum_{k=6}^{8}\binom{8}{k}(0.9)^k(0.1)^{8-k}
+   =28(0.9)^6(0.1)^2+8(0.9)^7(0.1)+(0.9)^8\approx 0.96. \qedhere
+\]
+\end{example}
+
+\begin{example}[Guessing on a multiple-choice test]
+A test has $20$ questions, each with four options. You must answer at least
+$65\%$ correctly to pass. If you guess every question, what are your chances?
+
+\solution Let $X\sim\Bin(20,\tfrac14)$ be the number correct. Since $65\%$ of
+$20$ is $13$, passing means $X\ge 13$:
+\[
+  \Prob(X\ge 13)=1-\sum_{k=0}^{12}\binom{20}{k}(\tfrac14)^k(\tfrac34)^{20-k}
+   \approx 0.00018,
+\]
+about $0.02\%$. Guessing your way to a pass is, for practical purposes,
+hopeless.
+\end{example}
+
+\begin{example}[An election, and the value of a larger sample]
+In a town, $55\%$ of voters prefer Robby; a simple majority wins. (a)~If $41$
+people vote, what is the probability Robby wins? (b)~If $401$ vote?
+
+\solution (a)~Let $X\sim\Bin(41,0.55)$; Robby wins if $X\ge 21$, and
+$\Prob(X\ge 21)\approx 0.741$. (b)~With $Y\sim\Bin(401,0.55)$ we need
+$Y\ge 201$, and $\Prob(Y\ge 201)\approx 0.978$. Even though the underlying
+preference is unchanged, the larger electorate makes the majority outcome far
+more reliable—an early glimpse of the law of large numbers
+(Chapter~\ref{ch:limits}).
+\end{example}
+
+\section{The Geometric Distribution}
+
+The number of independent $\Ber(p)$ trials needed to obtain the \emph{first}
+success is \emph{geometric}, $X\sim\Geo(p)$, with
+\[
+  \Prob(X=k)=(1-p)^{k-1}p,\qquad k=1,2,3,\dots
+\]
+Its mean is $\E[X]=1/p$. The geometric distribution is the discrete analogue of
+the memoryless exponential distribution we will meet in
+Chapter~\ref{ch:continuous}.
+
+\begin{example}[Two lotteries]
+Each month you play two lotteries, winning a large prize with probabilities
+$p_1$ and $p_2$ respectively, and you stop as soon as you win in either. Let $M$
+be the number of months you play. What is the distribution of $M$?
+
+\solution In a single month the chance of \emph{some} win is, by inclusion and
+independence, $q=p_1+p_2-p_1p_2$. Stopping in month $n$ requires $n-1$ winless
+months followed by a win, so $\Prob(M=n)=(1-q)^{n-1}q$. Thus
+$M\sim\Geo(p_1+p_2-p_1p_2)$.
+\end{example}
+
+\begin{example}[Cycles to pregnancy]
+The number of menstrual cycles until pregnancy is modeled as
+$X\sim\Geo(\tfrac13)$. (a)~What is the most likely value of $X$? (b)~Find the
+probability of success within five cycles.
+
+\solution (a)~Because $\Prob(X=k)=p(1-p)^{k-1}$ is decreasing in $k$ (as
+$0<1-p<1$), the most likely value is $k=1$. (b)~Summing the pmf,
+\[
+  \Prob(X\le 5)=\sum_{k=1}^{5}(1-p)^{k-1}p\approx 0.868,
+\]
+roughly an $87\%$ chance within five cycles. (We return to this dataset when we
+estimate $p$ from real data in Chapters~\ref{ch:estimation} and~\ref{ch:mle}.)
+\end{example}
+
+\begin{example}[A concert ticket and a fair-seeming rule]
+Only one ticket remains, and a seller tosses a coin (heads with probability
+$p$) until heads appears. If the number of tosses is odd your friend gets the
+ticket; if even, you do. Is this fair?
+
+\solution Let $X\sim\Geo(p)$. Summing the odd terms gives a geometric series with
+ratio $(1-p)^2$:
+\[
+  \Prob(X\text{ odd})=p\sum_{j\ge 0}(1-p)^{2j}=\frac{p}{1-(1-p)^2}=\frac{1}{2-p},
+\]
+and therefore $\Prob(X\text{ even})=\frac{1-p}{2-p}$. Since $0<p<1$,
+\[
+  \Prob(X\text{ even})=\frac{1-p}{2-p}<\frac{1}{2-p}=\Prob(X\text{ odd}).
+\]
+The rule favors your friend, so you should decline. (When $p=\tfrac12$ the odds
+are $\tfrac23$ to $\tfrac13$.)
+\end{example}
+
+\begin{example}[Estimating a population by recapture]
+A box holds an unknown number $N$ of identical bolts. Mark one bolt; then draw
+bolts at random one at a time. (a)~If you sample \emph{with} replacement until
+the marked bolt reappears, what is the distribution of the number $X$ of draws?
+(b)~If you sample \emph{without} replacement, show the number of draws $Y$ is
+uniform on $\{1,2,\dots,N\}$.
+
+\solution (a)~Each draw is the marked bolt with probability $1/N$ independently,
+so $X\sim\Geo(1/N)$. (b)~Without replacement, the marked bolt is equally likely
+to occupy any position in the random order of removal, so $\Prob(Y=k)=1/N$ for
+each $k=1,\dots,N$. One checks this directly: $\Prob(Y=1)=1/N$, and by the law
+of total probability
+$\Prob(Y=2)=\tfrac{1}{N-1}\cdot\tfrac{N-1}{N}=\tfrac1N$, and so on. This is the
+\emph{discrete uniform} distribution; we estimate $N$ from such data in
+Chapter~\ref{ch:mle}.
+\end{example}
+
+\section{The Poisson Distribution}
+
+The \emph{Poisson} distribution models counts of rare events—arrivals at a
+server, accidents at an intersection, bomb hits on a grid—when events occur
+independently at a constant average rate $\mu$. We write $X\sim\Pois(\mu)$, with
+\[
+  \Prob(X=k)=\frac{\mu^k e^{-\mu}}{k!},\qquad k=0,1,2,\dots
+\]
+and $\E[X]=\Var(X)=\mu$.
+
+\begin{example}[Does the cold drug help?]
+A person catches $\Pois(3)$ colds per year normally. A new drug lowers the mean
+to $\Pois(2)$ for $75\%$ of people and does nothing for the other $25\%$. A
+person tries it for a year and catches \emph{no} colds. How likely is it that
+the drug helped them?
+
+\solution Let $W=$``no colds'' and $D=$``the drug helps.'' For a Poisson
+variable, $\Prob(\text{no colds})=e^{-\mu}$, so $\Prob(W\given D)=e^{-2}$ and
+$\Prob(W\given D^c)=e^{-3}$. By Bayes' theorem,
+\[
+  \Prob(D\given W)=\frac{e^{-2}(0.75)}{e^{-2}(0.75)+e^{-3}(0.25)}\approx 0.89.
+\]
+An uneventful year is decent—though not conclusive—evidence that the drug
+worked.
+\end{example}
+
+The Poisson model reappears in Chapter~\ref{ch:estimation}, where we fit it to
+the famous data on World War II bomb hits over South London, and in
+Chapter~\ref{ch:gof}, where we test how well it fits counts of traffic
+accidents.

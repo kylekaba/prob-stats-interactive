@@ -1,0 +1,171 @@
+\chapter{Testing for Goodness of Fit}
+\label{ch:gof}
+
+We close with a question that has run quietly beneath the whole second half of
+the book: does a proposed probability model actually \emph{fit} the data? When we
+modeled bomb hits as Poisson or pea types by Mendel's ratios, we compared
+observed and predicted frequencies informally. This chapter makes the comparison
+rigorous through the likelihood ratio test and Pearson's chi-square test.
+
+\section{Is There a ``Best'' Test?}
+
+First, some vocabulary. A hypothesis fixing a parameter exactly, like
+$\theta=\theta_0$, is \emph{simple}; one allowing a range, like $\theta>\theta_0$,
+is \emph{composite}. A test of $H_0:\theta=\theta_0$ against $H_1:\theta\neq\theta_0$
+is \emph{two-sided}; a test against $H_1:\theta>\theta_0$ is \emph{one-sided}.
+Recall the two error probabilities, $\alpha$ (type I) and $\beta$ (type II); the
+\emph{power} of a test is $1-\beta$, its chance of correctly rejecting a false
+$H_0$. The usual strategy fixes $\alpha$ and seeks the largest possible power. A
+test achieving the most power among all level-$\alpha$ tests is \emph{most
+powerful}.
+
+Most powerful tests are hard to find and often do not exist. But in the simplest
+case they do, and they take a memorable form.
+
+\begin{theorem}[Neyman--Pearson lemma]
+To test the simple $H_0:\theta=\theta_0$ against the simple $H_1:\theta=\theta_1$,
+form the likelihood ratio
+\[
+  T=\frac{L(\theta_1)}{L(\theta_0)}=\frac{\prod_i f(x_i;\theta_1)}{\prod_i f(x_i;\theta_0)},
+\]
+and reject $H_0$ when $T>k$. Choosing $k$ so that $\Prob_{\theta_0}(T>k)=\alpha$
+yields the most powerful level-$\alpha$ test.
+\end{theorem}
+
+In words: when both hypotheses are simple and there are no nuisance parameters,
+the optimal test compares how well the two parameter values explain the data,
+through a ratio of likelihoods.
+
+\section{The Likelihood Ratio Test}
+
+Real problems usually involve composite hypotheses or nuisance parameters, where
+the Neyman--Pearson lemma does not directly apply. The \emph{likelihood ratio
+test} generalizes its idea. To test $H_0:\theta\in\Theta_0$ against
+$H_1:\theta\notin\Theta_0$, the test statistic is
+\[
+  \lambda=2\ln\!\left(\frac{\max_{\theta\in\Theta}L(\theta)}{\max_{\theta\in\Theta_0}L(\theta)}\right)
+   =2\ln\!\left(\frac{L(\hat\theta)}{L(\hat\theta_0)}\right),
+\]
+the (twice log) ratio of the best fit overall to the best fit allowed under
+$H_0$. Large $\lambda$ means $H_0$ explains the data far worse than the
+unrestricted model, and counts against $H_0$. Its calibration is a theorem.
+
+\begin{theorem}
+Under $H_0$, as $n\to\infty$ the statistic $\lambda$ converges to a chi-square
+distribution whose degrees of freedom equal the difference in dimension between
+$\Theta$ and $\Theta_0$. The $p$-value is the upper-tail probability
+$\Prob(\chi^2_{r-q}>\lambda)$.
+\end{theorem}
+
+The chi-square family (Figure~\ref{fig:chisq}) thus governs goodness-of-fit
+testing, just as the normal and $t$ families governed estimation.
+
+\begin{figure}[ht]
+  \centering
+  \includegraphics[width=0.55\linewidth]{chisq}
+  \caption{Chi-square densities. The degrees of freedom—the difference in
+  dimension between the full and restricted parameter spaces—determine which
+  curve calibrates the test.}
+  \label{fig:chisq}
+\end{figure}
+
+\section{The Multinomial Distribution}
+
+Goodness-of-fit data are counts in categories, which follow a \emph{multinomial}
+distribution—the multivariate cousin of the binomial. Drawing $n$ times
+independently from $k$ categories with probabilities $p=(p_1,\dots,p_k)$, and
+letting $X_j$ count category $j$, gives $X\sim\Mult(n,p)$ with
+\[
+  \Prob(X=x)=\binom{n}{x_1\cdots x_k}p_1^{x_1}\cdots p_k^{x_k}.
+\]
+Each $X_j$ is marginally $\Bin(n,p_j)$, so $\E[X_j]=np_j$.
+
+\begin{example}[The multinomial MLE]
+Show that the MLE of $p$ for multinomial data is $\hat p_j=X_j/n$.
+
+\solution Ignoring a constant, the loglikelihood is
+$\ell(p)=\sum_j X_j\ln p_j$, to be maximized subject to $\sum_j p_j=1$. Using a
+Lagrange multiplier $\lambda$, maximize
+$\sum_j X_j\ln p_j+\lambda(\sum_j p_j-1)$. Setting
+$\partial/\partial p_j=\tfrac{X_j}{p_j}+\lambda=0$ gives $\hat p_j=-X_j/\lambda$,
+and the constraint $\sum_j\hat p_j=1$ forces $\lambda=-n$, so
+$\hat p_j=X_j/n$—each category's observed proportion.
+\end{example}
+
+\section{Pearson's Chi-Square Test}
+
+To test a fully specified $H_0:p=p_0$ against $H_1:p\neq p_0$, Pearson's
+chi-square statistic compares observed counts $X_j$ to the counts $E_j=np_j$
+expected under $H_0$:
+\[
+  T=\sum_{j=1}^k\frac{(X_j-E_j)^2}{E_j}.
+\]
+Under $H_0$, $T$ converges to $\chi^2_{k-1}$ (one degree of freedom is lost to the
+constraint $\sum X_j=n$), and the $p$-value is $\Prob(\chi^2_{k-1}>t)$. Pearson's
+statistic is in fact a second-order Taylor approximation to the likelihood ratio
+statistic $\lambda$—a computational shortcut from $1900$, when logarithms were
+laborious—so the two give nearly identical answers.
+
+\begin{example}[Mendel's peas]
+Mendel's theory predicts that round-yellow, wrinkled-yellow, round-green, and
+wrinkled-green peas occur in proportions
+$p_0=(\tfrac{9}{16},\tfrac{3}{16},\tfrac{3}{16},\tfrac{1}{16})$. In $n=556$ plants
+he observed $X=(315,101,108,32)$. Test $H_0:p=p_0$.
+
+\solution The expected counts are $np_0=(312.75,104.25,104.25,34.75)$
+(Figure~\ref{fig:mendel}). Pearson's statistic is
+\[
+  t=\frac{(315-312.75)^2}{312.75}+\frac{(101-104.25)^2}{104.25}+\frac{(108-104.25)^2}{104.25}+\frac{(32-34.75)^2}{34.75}=0.47.
+\]
+With $k=4$ categories there are $k-1=3$ degrees of freedom, so the $p$-value is
+$\Prob(\chi^2_3>0.47)=0.93$—no evidence against the theory. The likelihood ratio
+statistic gives almost the same value, $\lambda=0.48$, with $p$-value $0.92$. By
+either test, Mendel's data are strikingly consistent with his $9:3:3:1$ law.
+\end{example}
+
+\begin{figure}[ht]
+  \centering
+  \includegraphics[width=0.55\linewidth]{mendel}
+  \caption{Mendel's observed pea counts against the $9:3:3:1$ prediction. The
+  near-perfect agreement is reflected in a tiny chi-square statistic.}
+  \label{fig:mendel}
+\end{figure}
+
+\section{Goodness of Fit with Estimated Parameters}
+
+Often the model under test is not fully specified—we hypothesize a Poisson
+distribution but must estimate its mean from the data. Each parameter estimated
+costs one further degree of freedom.
+
+\begin{example}[Are accidents Poisson?]
+The number of accidents per week at an intersection over $n=50$ weeks was:
+\[
+\begin{array}{c|cccc}
+x & 0 & 1 & 2 & \ge 3\\\hline
+\text{frequency} & 32 & 12 & 6 & 0
+\end{array}
+\]
+Test whether the weekly count is Poisson.
+
+\solution Under $H_0$ the count is $\Pois(\mu)$ with $\mu$ unknown. Its MLE is the
+total accidents over total weeks, $\hat\mu=24/50=0.48$. Pooling into the three
+categories $X=0$, $X=1$, $X\ge 2$, the estimated probabilities are
+\[
+  \hat p_1=e^{-0.48}=0.619,\quad \hat p_2=0.48e^{-0.48}=0.297,\quad \hat p_3=1-\hat p_1-\hat p_2=0.084,
+\]
+giving expected counts $E_1=30.95$, $E_2=14.85$, $E_3=4.20$. Then
+\[
+  t=\frac{(32-30.95)^2}{30.95}+\frac{(12-14.85)^2}{14.85}+\frac{(6-4.20)^2}{4.20}=1.354.
+\]
+With $k=3$ categories we lose one degree of freedom to the constraint
+$\sum X_j=n$ and \emph{another} to estimating $\mu$, leaving $k-2=1$. The
+$p$-value is $\Prob(\chi^2_1>1.354)=0.24$, so we do not reject $H_0$: the data
+are consistent with a Poisson model for the accident counts.
+\end{example}
+
+\bigskip
+This brings our tour full circle. We began by describing data, built the
+probability theory to model it, and developed the inferential tools—estimation,
+regression, and testing—to draw conclusions from it. Goodness-of-fit testing
+closes the loop, letting us ask of any model the most basic question of all:
+does it fit?

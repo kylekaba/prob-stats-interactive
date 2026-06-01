@@ -1,0 +1,115 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>Least-Squares Regression — Interactive</title>
+<link rel="stylesheet" href="assets/style.css">
+<script src="https://cdn.plot.ly/plotly-2.35.2.min.js" charset="utf-8"></script>
+<script>window.MathJax={tex:{inlineMath:[['\\(','\\)']]},svg:{fontCache:'global'}};</script>
+<script src="https://cdn.jsdelivr.net/npm/mathjax@3/es5/tex-mml-chtml.js" async></script>
+</head>
+<body data-page="regression">
+<main class="wrap narrow">
+  <h1>Least-Squares Regression</h1>
+  <p class="lead">Move the line by hand with the slope and intercept sliders. The
+  red sticks are the residuals, and the box keeps a running total of their squared
+  lengths. Your goal: make that total as small as possible — then press
+  <em>Snap to best fit</em> to see how close you got (Chapter&nbsp;11).</p>
+
+  <div class="widget">
+    <div class="controls">
+      <div class="control">
+        <label for="slope">Slope β <span class="val" id="val-slope">1.00</span></label>
+        <input type="range" id="slope" min="-1" max="4" step="0.05" value="1.0">
+      </div>
+      <div class="control">
+        <label for="inter">Intercept α <span class="val" id="val-inter">0.0</span></label>
+        <input type="range" id="inter" min="-6" max="12" step="0.1" value="0">
+      </div>
+      <div class="control">
+        <label for="noise">Data scatter <span class="val" id="val-noise">2.0</span></label>
+        <input type="range" id="noise" min="0.3" max="6" step="0.1" value="2.0">
+      </div>
+      <div class="control" style="justify-content:flex-end;gap:.5rem">
+        <button class="mini" id="snap">🎯 Snap to best fit</button>
+        <button class="mini" id="newdata">🎲 New data</button>
+      </div>
+    </div>
+    <div id="plot" class="plot"></div>
+    <div class="readout" id="readout"></div>
+  </div>
+
+  <div class="note blue">
+    <b>Why squares?</b> Squaring punishes big misses far more than small ones and
+    makes the total a smooth bowl with a single lowest point — the unique
+    least-squares line \(\hat\alpha,\hat\beta\). Notice you can never beat the
+    "best fit" SSE by hand: that is exactly what <em>least squares</em> guarantees.
+  </div>
+</main>
+
+<script src="assets/stats.js"></script>
+<script>
+const S=window.Stats;
+const COL="#1f5fa8", RED="#b03030", GREEN="#2a8f5a";
+let rng=S.makeRNG(42);
+let X=[],Y=[];
+
+function genData(){
+  const noise=+document.getElementById("noise").value;
+  X=[]; Y=[];
+  const trueA=2, trueB=1.3;
+  for(let i=0;i<24;i++){
+    const x=S.sampleUniform(rng,0.5,9.5);
+    X.push(x); Y.push(trueA+trueB*x+S.sampleNormal(rng,0,noise));
+  }
+}
+
+function draw(){
+  const a=+document.getElementById("inter").value, b=+document.getElementById("slope").value;
+  // residual segments as one trace with nulls
+  const rx=[], ry=[];
+  for(let i=0;i<X.length;i++){ rx.push(X[i],X[i],null); ry.push(Y[i],a+b*X[i],null); }
+  const xline=[0,10];
+  const sse=S.sse(X,Y,a,b);
+  const best=S.linreg(X,Y), bestSSE=S.sse(X,Y,best.alpha,best.beta);
+  Plotly.react("plot",[
+    {x:rx,y:ry,type:"scatter",mode:"lines",line:{color:"rgba(176,48,48,.55)",width:1.5},
+      hoverinfo:"skip",name:"residuals"},
+    {x:X,y:Y,type:"scatter",mode:"markers",marker:{color:COL,size:9,line:{color:"#fff",width:1}},name:"data"},
+    {x:xline,y:xline.map(x=>a+b*x),type:"scatter",mode:"lines",line:{color:GREEN,width:3},name:"your line"},
+  ],{
+    margin:{l:50,r:15,t:12,b:42},height:430,
+    xaxis:{title:"x",gridcolor:"#e6ecf3",range:[0,10]},
+    yaxis:{title:"y",gridcolor:"#e6ecf3"},
+    paper_bgcolor:"rgba(0,0,0,0)",plot_bgcolor:"rgba(0,0,0,0)",
+    legend:{orientation:"h",y:1.1,x:1,xanchor:"right"},
+  },{displayModeBar:false,responsive:true});
+
+  const verdict = sse<=bestSSE*1.001 ? "🏆 optimal!" :
+                  sse<bestSSE*1.1 ? "very close" : (sse<bestSSE*1.5?"getting there":"keep tuning");
+  document.getElementById("readout").innerHTML=
+    stat("Your SSE",sse)+stat("Best possible SSE",bestSSE)+
+    '<div class="stat"><b>How close?</b><br><span class="num" style="color:'+
+      (sse<=bestSSE*1.001?GREEN:RED)+'">'+verdict+'</span></div>'+
+    stat("Best-fit slope β̂",best.beta)+stat("Best-fit intercept α̂",best.alpha);
+}
+function stat(l,v){return '<div class="stat"><b>'+l+'</b><br><span class="num">'+(+v).toFixed(2)+'</span></div>';}
+
+const slope=document.getElementById("slope"), inter=document.getElementById("inter");
+slope.addEventListener("input",()=>{document.getElementById("val-slope").textContent=(+slope.value).toFixed(2);draw();});
+inter.addEventListener("input",()=>{document.getElementById("val-inter").textContent=(+inter.value).toFixed(1);draw();});
+document.getElementById("noise").addEventListener("input",e=>{document.getElementById("val-noise").textContent=(+e.target.value).toFixed(1);rng=S.makeRNG(42);genData();draw();});
+document.getElementById("snap").addEventListener("click",()=>{
+  const best=S.linreg(X,Y);
+  slope.value=best.beta.toFixed(2); inter.value=best.alpha.toFixed(1);
+  document.getElementById("val-slope").textContent=(+slope.value).toFixed(2);
+  document.getElementById("val-inter").textContent=(+inter.value).toFixed(1);
+  draw();
+});
+document.getElementById("newdata").addEventListener("click",()=>{rng=S.makeRNG((Math.random()*1e9)|0);genData();draw();});
+genData(); draw();
+</script>
+<script src="assets/site.js"></script>
+</body>
+</html>

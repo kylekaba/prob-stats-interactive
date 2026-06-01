@@ -1,0 +1,192 @@
+\chapter{Inequalities and Limit Theorems}
+\label{ch:limits}
+
+This chapter collects three of the deepest and most useful results about
+averages of random variables: Jensen's inequality, which compares the average of
+a function to the function of the average; Chebyshev's inequality, which bounds
+how far a random variable can stray from its mean; and the law of large numbers
+and central limit theorem, which together explain why sample averages stabilize
+and why the normal distribution is ubiquitous.
+
+\section{Jensen's Inequality}
+
+A function $g$ is \emph{convex} if its graph lies below its chords (equivalently
+$g''\ge 0$), and \emph{concave} if the reverse holds. \emph{Jensen's inequality}
+says that for a convex $g$,
+\[
+  g(\E[X])\le \E[g(X)],
+\]
+with the inequality reversed for concave $g$. The averaging and the bending
+interact in a fixed direction.
+
+\begin{example}
+For a positive random variable $X$, which is larger, $\E[\ln X]$ or
+$\ln(\E[X])$?
+
+\solution The logarithm is concave, so Jensen's inequality (reversed) gives
+$\ln(\E[X])\ge\E[\ln X]$. Taking the logarithm of an average overstates the
+average of the logarithms.
+\end{example}
+
+\begin{example}
+For a positive random variable $X$, which is larger, $\E[e^X]$ or $e^{\E[X]}$?
+
+\solution The exponential is convex, so Jensen's inequality gives
+$\E[e^X]\ge e^{\E[X]}$. The two examples illustrate how the direction of the
+inequality follows the curvature of the function.
+\end{example}
+
+We will use Jensen's inequality again in Chapter~\ref{ch:estimation} to show that
+certain natural estimators are systematically biased.
+
+\section{Chebyshev's Inequality}
+
+\emph{Chebyshev's inequality} bounds the probability that a random variable lands
+far from its mean, using only the variance:
+\[
+  \Prob\bigl(|X-\E[X]|\ge a\bigr)\le\frac{\Var(X)}{a^2},\qquad a>0.
+\]
+It requires no knowledge of the distribution's shape, which makes it both very
+general and rather conservative.
+
+\begin{example}[Bounding a test score]
+A final-exam score $X$ has mean $75$ and variance $25$. What can be said about
+$\Prob(55\le X\le 95)$?
+
+\solution The interval is $75\pm 20$, so we want $\Prob(|X-75|\le 20)$. Chebyshev
+bounds the complementary event:
+$\Prob(|X-75|\ge 20)\le \tfrac{25}{20^2}=\tfrac1{16}$. Therefore
+$\Prob(55\le X\le 95)\ge 1-\tfrac1{16}=\tfrac{15}{16}$. At least
+$93.75\%$ of scores lie within the stated range, whatever the score
+distribution looks like.
+\end{example}
+
+\begin{example}[How large a poll?]
+To predict the proportion $p$ of voters favoring a candidate, we interview $n$
+people and use $\Xbar_n$, the sample fraction. How large must $n$ be so that
+$\Prob(|\Xbar_n-p|<0.2)\ge 0.9$?
+
+\solution Each respondent is $\Ber(p)$, so $\E[\Xbar_n]=p$ and
+$\Var(\Xbar_n)=p(1-p)/n$. By Chebyshev,
+\[
+  \Prob(|\Xbar_n-p|\ge 0.2)\le \frac{p(1-p)/n}{0.2^2}=\frac{25\,p(1-p)}{n}\le\frac{25}{4n},
+\]
+using $p(1-p)\le\tfrac14$. Requiring this to be at most $0.1$ gives
+$n\ge 62.5$, so $n=63$ suffices for \emph{every} value of $p$. (The same
+calculation with a tolerance of $0.1$ instead of $0.2$ demands $n\ge 250$, and a
+confidence of $0.95$ instead of $0.9$ demands $n\ge 125$.) Chebyshev's
+distribution-free guarantee is convenient but, as the next section shows, far
+from tight.
+\end{example}
+
+\section{The Law of Large Numbers}
+
+The \emph{law of large numbers} (LLN) makes precise the intuition that averages
+settle down: if $X_1,X_2,\dots$ are independent with common mean $\mu$ and finite
+variance, then for any $\epsilon>0$,
+\[
+  \Prob\bigl(|\Xbar_n-\mu|>\epsilon\bigr)\to 0\quad\text{as }n\to\infty.
+\]
+The sample average converges to the true mean.
+
+\begin{example}[The casino's edge]
+In the game Red-or-Black, the casino wins a \$1 bet with probability
+$\tfrac{19}{37}$ and loses \$1 with probability $\tfrac{18}{37}$. The game is
+played about $1000$ times a night, $365$ nights a year. Estimate the casino's
+annual income from the game.
+
+\solution Let $X_i=\pm 1$ be the casino's gain on play $i$, so
+$\E[X_i]=1\cdot\tfrac{19}{37}+(-1)\cdot\tfrac{18}{37}=\tfrac1{37}$. With
+$n=365000$ plays per year, the LLN says the average gain per play is, with
+overwhelming probability, near $\tfrac1{37}$. By linearity the expected annual
+total is
+\[
+  \E\Bigl[\sum_{i=1}^{n}X_i\Bigr]=n\cdot\tfrac1{37}=365000\cdot\tfrac1{37}\approx \$9865.
+\]
+The casino's edge is tiny per play, but the law of large numbers turns it into a
+dependable income.
+\end{example}
+
+\section{The Central Limit Theorem}
+
+The \emph{central limit theorem} (CLT) says that the \emph{sum} (or average) of
+many independent, identically distributed random variables is approximately
+normal, regardless of the original distribution: if each $X_i$ has mean $\mu$ and
+variance $\sigma^2$, then for large $n$,
+\[
+  \frac{X_1+\cdots+X_n-n\mu}{\sigma\sqrt n}\ \approx\ \N(0,1).
+\]
+This single fact underlies most of classical statistics.
+
+\begin{example}[Defective chips in a batch]
+Each chip is defective with probability $\tfrac15$, independently. In a batch of
+$100$, approximate the probability that fewer than $15$ are defective.
+
+\solution Let $X_i\sim\Ber(\tfrac15)$, so $\E[X_i]=\tfrac15$ and
+$\Var(X_i)=\tfrac{4}{25}$. The total $S=\sum X_i$ has mean $20$ and variance
+$16$, so $\mathrm{sd}(S)=4$. By the CLT,
+\[
+  \Prob(S<15)\approx\Prob\!\Bigl(Z<\tfrac{15-20}{4}\Bigr)=\Prob(Z<-1.25)=\Prob(Z>1.25)\approx 0.106. \qedhere
+\]
+\end{example}
+
+\begin{example}[A sum from an unfamiliar density]
+Let $X_1,\dots,X_{625}$ be independent with density $f(x)=3(1-x)^2$ on $[0,1]$.
+Approximate $\Prob(X_1+\cdots+X_{625}<170)$.
+
+\solution First find the moments. Integrating,
+$\E[X_i]=\int_0^1 x\cdot 3(1-x)^2\,dx=\tfrac14$ and
+$\E[X_i^2]=\int_0^1 x^2\cdot 3(1-x)^2\,dx=\tfrac1{10}$, so
+$\Var(X_i)=\tfrac1{10}-\tfrac1{16}=\tfrac3{80}$. The sum has mean
+$625\cdot\tfrac14=156.25$ and standard deviation
+$\sqrt{3/80}\cdot 25\approx 4.84$. By the CLT,
+\[
+  \Prob(S<170)\approx\Prob\!\Bigl(Z<\tfrac{170-156.25}{4.84}\Bigr)\approx\Prob(Z<2.84)\approx 0.998. \qedhere
+\]
+\end{example}
+
+\begin{example}[Chain links, and the danger of a small bias]
+Links have length with mean $5$ cm and variance $0.04$. A chain of $1002$ links
+is sold as ``at least $50$ m.'' (a)~What fraction of chains fall short?
+(b)~If the true mean is actually $4.99$ cm, what fraction fall short?
+
+\solution (a)~A chain is short when the link total is below $5000$ cm. With mean
+$1002\cdot 5=5010$ and standard deviation $\sqrt{1002\cdot 0.04}\approx 6.33$,
+\[
+  \Prob(S<5000)\approx\Prob\!\Bigl(Z<\tfrac{5000-5010}{6.33}\Bigr)\approx 0.057,
+\]
+about $6\%$. (b)~With mean $4.99$ the total mean is $5000.0$ (nearly exactly
+$5000$), so $\Prob(S<5000)\approx\tfrac12$: about half the chains fall short.
+A seemingly negligible change in the mean—one part in five hundred—roughly
+\emph{octuples} the give-away rate. Small biases, compounded over many links,
+have large consequences.
+\end{example}
+
+\begin{example}[A sum of squared normals]
+Let $X_1,X_2,\dots$ be independent $\N(0,1)$ and set $Y_n=X_1^2+\cdots+X_n^2$.
+Given that $\E[X_i^2]=1$ and $\E[X_i^4]=3$, approximate $\Prob(Y_{50}>60)$.
+
+\solution Each squared term has mean $1$ and variance
+$\E[X_i^4]-(\E[X_i^2])^2=3-1=2$. Thus $Y_{50}$ has mean $50$ and variance
+$100$, so standard deviation $10$. By the CLT,
+\[
+  \Prob(Y_{50}>60)\approx\Prob\!\Bigl(Z>\tfrac{60-50}{10}\Bigr)=\Prob(Z>1)\approx 0.159.
+\]
+The variable $Y_n$ is a \emph{chi-square} random variable with $n$ degrees of
+freedom, a distribution we will meet again in
+Chapters~\ref{ch:inference} and~\ref{ch:gof}.
+\end{example}
+
+\subsection{Chebyshev versus the central limit theorem}
+
+\begin{example}[Revisiting the poll]
+Using the CLT instead of Chebyshev, how large must the poll be so that
+$\Prob(|\Xbar_n-p|<0.2)\ge 0.9$?
+
+\solution Standardizing, the requirement becomes
+$\Prob\!\bigl(|Z|<\sqrt n\,\tfrac{0.2}{\sqrt{p(1-p)}}\bigr)\ge 0.9$, i.e.\
+$\sqrt n\,\tfrac{0.2}{\sqrt{p(1-p)}}\ge 1.645$. Using $p(1-p)\le\tfrac14$ in the
+worst case yields $n\ge 17$. Compare this with the $n\ge 63$ demanded by
+Chebyshev: the CLT, by using the \emph{shape} of the distribution and not just
+its variance, gives a far sharper—and in practice more realistic—sample size.
+\end{example}

@@ -1,0 +1,256 @@
+\chapter{Exploratory Data Analysis}
+\label{ch:eda}
+
+Until now we have built probability models for random phenomena. When we meet a
+new phenomenon, though, we usually start from the other end: we collect a set of
+observations—a \emph{dataset}—and try to learn what kind of randomness produced
+it. \emph{Exploratory data analysis} (EDA) is the art of summarizing a dataset,
+graphically and numerically, so that its essential features stand out. These
+summaries are \emph{descriptive}: they let the data speak for themselves,
+without yet inferring anything about an underlying distribution.
+
+Throughout this chapter we use as a running example the durations (in seconds) of
+$272$ eruptions of the Old Faithful geyser. Simply listing the numbers, or even
+sorting them, reveals little; we need better summaries.
+
+\section{Graphical Summaries}
+
+\subsection{The histogram}
+
+A \emph{histogram} divides the range of the data into intervals, or \emph{bins}
+$B_1,\dots,B_m$, and draws a bar over each. We scale the histogram so the total
+area is one, which makes it a crude estimate of an underlying density: the height
+over bin $B_i$ is
+\[
+  \text{height} = \frac{\text{number of observations in }B_i}{n\,|B_i|},
+\]
+where $|B_i|$ is the bin width. The area of each bar then equals the proportion of
+data in that bin.
+
+The choice of bin width is a genuine tradeoff. Too narrow, and the histogram
+dissolves into a jagged row of isolated spikes; too wide, and real structure is
+smoothed away. Figure~\ref{fig:histbw} shows the geyser data at three bin widths.
+The middle choice reveals the dataset's most important feature—\emph{two}
+clusters of eruption durations, near $120$ and $270$ seconds—that the widest bins
+erase entirely.
+
+\begin{figure}[ht]
+  \centering
+  \includegraphics[width=\linewidth]{hist_binwidth}
+  \caption{The same geyser data at three bin widths. Too small produces noise;
+  too large hides the two modes. In practice one chooses the bin width by trial
+  and error until the picture looks reasonable.}
+  \label{fig:histbw}
+\end{figure}
+
+\subsection{Kernel density estimates}
+
+A histogram is simple but jagged, and sensitive to where the bin edges fall. A
+\emph{kernel density estimate} (KDE) produces a smooth curve instead. The idea is
+to ``place a small pile of sand'' over each observation and add the piles up;
+where data accumulate, the sand piles high. Formally one chooses a \emph{kernel}
+$K$—a symmetric density giving each pile its shape—and a \emph{bandwidth} $h$
+controlling each pile's width.
+
+\begin{figure}[ht]
+  \centering
+  \includegraphics[width=0.62\linewidth]{kde_faithful}
+  \caption{A kernel density estimate of the geyser data overlaid on a histogram.
+  The two modes are now unmistakable and the curve is smooth.}
+  \label{fig:kdefaithful}
+\end{figure}
+
+A kernel $K$ typically satisfies $K(u)\ge 0$, integrates to one, is symmetric
+about zero, and vanishes outside $[-1,1]$. Common choices include the
+Epanechnikov kernel $K(u)=\tfrac34(1-u^2)$ and the triweight kernel
+$K(u)=\tfrac{35}{32}(1-u^2)^3$; the normal kernel is also popular, though it
+violates the last condition. Figure~\ref{fig:kernels} compares several.
+
+\begin{figure}[ht]
+  \centering
+  \includegraphics[width=0.6\linewidth]{kernels}
+  \caption{Several standard kernels. The choice of kernel matters far less than
+  the choice of bandwidth.}
+  \label{fig:kernels}
+\end{figure}
+
+The bandwidth plays exactly the role the bin width played for the histogram: too
+small gives a spiky curve, too large oversmooths and can wash out the modes
+(Figure~\ref{fig:kdebw}). The choice of \emph{kernel}, by contrast, has only a
+minor effect on the result.
+
+\begin{figure}[ht]
+  \centering
+  \includegraphics[width=\linewidth]{kde_bandwidth}
+  \caption{The bandwidth $h$ controls smoothness. Two well-known kernels with the
+  same bandwidth produce nearly identical curves; the bandwidth is what matters.}
+  \label{fig:kdebw}
+\end{figure}
+
+\subsection{The empirical distribution function}
+
+A third graphical summary plots the data cumulatively. The \emph{empirical
+distribution function} (or empirical cdf) is
+\[
+  F_n(x)=\frac{\text{number of observations}\le x}{n},
+\]
+the proportion of the dataset at or below $x$. Its graph is a staircase: flat
+below the minimum, equal to one above the maximum, and rising by a jump of
+$1/n$ at each observation.
+
+\begin{example}[A small empirical cdf]
+For the dataset $\{4,3,9,1,7\}$, the empirical cdf is $0$ for $x<1$, jumps to
+$\tfrac15$ at $x=1$, to $\tfrac25$ at $x=3$, to $\tfrac35$ at $x=4$, and so on
+up to $1$ for $x\ge 9$ (Figure~\ref{fig:ecdftoy}). The closed and open circles
+emphasize that the function takes its \emph{higher} value at each jump point.
+\end{example}
+
+\begin{figure}[ht]
+  \centering
+  \includegraphics[width=0.52\linewidth]{ecdf_toy}
+  \caption{The empirical distribution function of a five-point dataset.}
+  \label{fig:ecdftoy}
+\end{figure}
+
+For the geyser data (Figure~\ref{fig:ecdffaithful}), the empirical cdf rises
+\emph{steeply} where observations crowd together—near $120$ and $270$
+seconds—and flattens where they thin out. Steepness of $F_n$ is the cumulative
+signature of a mode.
+
+\begin{figure}[ht]
+  \centering
+  \includegraphics[width=0.52\linewidth]{ecdf_faithful}
+  \caption{Empirical distribution function of the geyser data; the two steep
+  stretches correspond to the two clusters of durations.}
+  \label{fig:ecdffaithful}
+\end{figure}
+
+\subsection{The scatterplot}
+
+For a \emph{bivariate} dataset of pairs $(x_1,y_1),\dots,(x_n,y_n)$, the
+\emph{scatterplot} simply plots the points. It is the natural first step when we
+suspect that $y$ depends on $x$. We will return to scatterplots in
+Chapter~\ref{ch:leastsquares}, where we fit lines to them; see, for instance,
+the timber and mortality data in that chapter.
+
+\begin{example}[Correlation of geyser eruptions and waiting times]
+For the geyser, each eruption's duration can be paired with the waiting time
+until the next eruption. The empirical correlation coefficient of these two
+quantities is about $0.90$—a strong positive association: long eruptions tend to
+be followed by long waits.
+\end{example}
+
+\begin{example}[Height and weight, and a prediction]
+For a classic dataset of women's heights and weights, fitting a line gives
+$\text{height}\approx 0.287\,(\text{weight})+25.72$ inches, with an empirical
+correlation of $0.995$—an exceptionally strong linear relationship. Using the
+line, a woman weighing $105$ pounds is predicted to be about
+$0.287(105)+25.72\approx 56$ inches tall.
+\end{example}
+
+\begin{example}[Linearizing exponential growth]
+The U.S.\ population appears to grow roughly exponentially, $P(t)=ae^{kt}$.
+Taking logarithms turns this into a \emph{linear} relationship,
+$\ln P(t)=\ln a + kt$, so regressing $\ln P$ on $t$ recovers the parameters. With
+$t$ measured in years from $1790$, this yields $\ln a\approx 1.688$ (so
+$a\approx 5.41$ million) and $k\approx 0.0220$, i.e.\ $P(t)\approx 5.41\,e^{0.0220t}$.
+Transforming to linearity before fitting is a recurring EDA tactic.
+\end{example}
+
+\section{Numerical Summaries}
+
+Graphs reveal shape; numbers pin down location and spread.
+
+\subsection{The center of a dataset}
+
+The \emph{sample mean} is the ordinary average
+$\xbar_n=\tfrac1n\sum_{i=1}^n x_i$, the natural analogue of expectation. The
+\emph{sample median} is the middle value of the sorted data (the average of the
+two middle values when $n$ is even). The mean is sensitive to \emph{outliers};
+the median is robust.
+
+\begin{example}[Outliers and a recording error]
+Eleven hourly temperatures recorded one New Year's at Wick, Scotland, were
+\[
+  43,43,41,41,41,42,43,58,58,41,41.
+\]
+The two $58$'s sit far from the rest and inflate the mean to $44.7$; dropping
+them lowers it to $41.8$. The median barely moves ($42$ versus $41$). In fact the
+two anomalies arose from a switch of recording units; the corrected values are
+near $41$, giving mean $41.5$ and median $42$. The median's robustness is exactly
+its insensitivity to such contamination. (This is an argument for being
+\emph{aware} of outliers, not for blindly deleting them.)
+\end{example}
+
+\subsection{The spread of a dataset}
+
+The \emph{sample variance} and \emph{sample standard deviation} are
+\[
+  s_n^2=\frac{1}{n-1}\sum_{i=1}^n (x_i-\xbar_n)^2,\qquad s_n=\sqrt{s_n^2}.
+\]
+The divisor $n-1$ rather than $n$ will be justified in
+Chapter~\ref{ch:estimation}, where we show it makes $s_n^2$ unbiased. Like the
+mean, the standard deviation is sensitive to outliers: for the uncorrected Wick
+data $s_n=6.62$, but only $0.97$ with the two anomalies removed.
+
+A robust alternative is the \emph{median of absolute deviations},
+\[
+  \MAD(x_1,\dots,x_n)=\Med\bigl(|x_1-\Med_n|,\dots,|x_n-\Med_n|\bigr),
+\]
+which, like the median, is hardly affected by a few extreme values.
+
+\subsection{Quantiles, quartiles, and the IQR}
+
+The \emph{$p$th empirical quantile} $q_n(p)$ is, loosely, the value below which a
+proportion $p$ of the data lie. Writing the sorted data (the \emph{order
+statistics}) as $x_{(1)}\le\cdots\le x_{(n)}$, we take the $i$th order statistic
+to be the $\tfrac{i}{n+1}$ quantile and interpolate linearly between them.
+
+\begin{example}[Interpolating a percentile]
+For the Wick data, the order statistics put $42$ at the $\tfrac{6}{12}=0.5$
+quantile and $43$ at the $\tfrac{7}{12}$ quantile. The $55$th percentile lies
+between these; linear interpolation between $(0.5,42)$ and $(0.583,43)$ gives
+$q_n(0.55)\approx 42.6$.
+\end{example}
+
+The lower and upper \emph{quartiles} are $q_n(0.25)$ and $q_n(0.75)$, and the
+\emph{interquartile range} is
+\[
+  \mathrm{IQR}=q_n(0.75)-q_n(0.25),
+\]
+the span of the middle half of the data—another robust measure of spread.
+Together with the minimum, median, and maximum, the quartiles form the
+\emph{five-number summary}.
+
+\begin{example}[A five-number summary]
+For $1000$ recorded earthquake magnitudes, the five-number summary is
+\[
+  \min = 4.00,\quad Q_1 = 4.30,\quad \text{median}=4.60,\quad Q_3=4.90,\quad \max=6.40,
+\]
+with sample mean $4.62$. The closeness of mean and median, and the symmetry of
+the quartiles about the median, suggest a roughly symmetric bulk with a modest
+right tail.
+\end{example}
+
+\subsection{The boxplot}
+
+The \emph{boxplot} renders the five-number summary graphically
+(Figure~\ref{fig:boxplot}). A box spans the lower to upper quartile—its height is
+the IQR—with a line at the median. \emph{Whiskers} extend to the most extreme
+observations within $1.5\times\mathrm{IQR}$ of the box; anything beyond is plotted
+individually as a suspected outlier.
+
+\begin{figure}[ht]
+  \centering
+  \includegraphics[width=\linewidth]{boxplot}
+  \caption{Left: the anatomy of a boxplot. Right: a boxplot of the geyser data.
+  Boxplots are excellent for spread and skew but, as here, cannot reveal that a
+  dataset is bimodal—the off-center median is the only hint of structure.}
+  \label{fig:boxplot}
+\end{figure}
+
+The boxplot is superb for comparing spreads and spotting skew and outliers, but
+it has a blind spot: it cannot show that the geyser data are \emph{bimodal}. The
+position of the median within the box hints at asymmetry, but only the histogram
+and KDE reveal the two peaks. No single summary tells the whole story—which is
+why exploratory analysis uses several in concert.

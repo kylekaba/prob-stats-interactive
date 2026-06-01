@@ -1,0 +1,112 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>Law of Large Numbers — Interactive</title>
+<link rel="stylesheet" href="assets/style.css">
+<script src="https://cdn.plot.ly/plotly-2.35.2.min.js" charset="utf-8"></script>
+<script>window.MathJax={tex:{inlineMath:[['\\(','\\)']]},svg:{fontCache:'global'}};</script>
+<script src="https://cdn.jsdelivr.net/npm/mathjax@3/es5/tex-mml-chtml.js" async></script>
+</head>
+<body data-page="lln">
+<main class="wrap narrow">
+  <h1>The Law of Large Numbers</h1>
+  <p class="lead">Each colored path is the <em>running average</em> of one long
+  experiment. Individually they wander, but every one is pulled toward the true
+  mean (the dashed line) as the number of trials grows — that is the Law of Large
+  Numbers (Chapter&nbsp;6).</p>
+
+  <div class="widget">
+    <div class="controls">
+      <div class="control">
+        <label for="exp">Experiment</label>
+        <select id="exp">
+          <option value="coin">Fair coin (mean 0.5)</option>
+          <option value="die">Six-sided die (mean 3.5)</option>
+          <option value="roulette">Casino Red/Black (mean 1/37)</option>
+          <option value="exp">Exponential, λ=1 (mean 1)</option>
+        </select>
+      </div>
+      <div class="control">
+        <label for="steps">Trials per path <span class="val" id="val-steps">1000</span></label>
+        <input type="range" id="steps" min="100" max="5000" step="100" value="1000">
+      </div>
+      <div class="control">
+        <label for="paths">Number of paths <span class="val" id="val-paths">6</span></label>
+        <input type="range" id="paths" min="1" max="20" step="1" value="6">
+      </div>
+      <div class="control" style="justify-content:flex-end">
+        <button class="mini" id="run">🎲 Run again</button>
+      </div>
+    </div>
+
+    <div id="plot" class="plot"></div>
+    <div class="readout" id="readout"></div>
+  </div>
+
+  <div class="note">
+    <b>Two takeaways.</b> Early on (left side, note the log scale) the averages swing
+    wildly; with few trials, luck dominates. By the right side they have nearly
+    collapsed onto the true mean. The casino option makes the point vivid: the house
+    edge of just \(1/37\) per spin is invisible in a handful of games but
+    inevitable over thousands.
+  </div>
+</main>
+
+<script src="assets/stats.js"></script>
+<script>
+const S=window.Stats;
+const RED="#b03030";
+const PALETTE=["#1f5fa8","#2a8f5a","#c9772a","#7a4fb0","#b03030","#1aa0a0",
+  "#d2691e","#3f7fd0","#5fa854","#9a5fb0"];
+let rng=S.makeRNG(2024);
+
+const EXP={
+  coin:{mean:0.5, draw:()=>S.sampleBernoulli(rng,0.5), label:"proportion of heads"},
+  die:{mean:3.5, draw:()=>1+Math.floor(rng()*6), label:"average roll"},
+  roulette:{mean:1/37, draw:()=>(rng()<19/37?1:-1), label:"average gain per \$1 bet"},
+  exp:{mean:1, draw:()=>S.sampleExponential(rng,1), label:"sample mean"},
+};
+
+const els={exp:document.getElementById("exp"),steps:document.getElementById("steps"),
+  paths:document.getElementById("paths"),valSteps:document.getElementById("val-steps"),
+  valPaths:document.getElementById("val-paths")};
+
+function draw(){
+  const e=EXP[els.exp.value], steps=+els.steps.value, paths=+els.paths.value;
+  const xs=[]; for(let t=1;t<=steps;t++) xs.push(t);
+  const traces=[];
+  let finalVals=[];
+  for(let p=0;p<paths;p++){
+    const y=new Array(steps); let sum=0;
+    for(let t=0;t<steps;t++){ sum+=e.draw(); y[t]=sum/(t+1); }
+    finalVals.push(y[steps-1]);
+    traces.push({x:xs,y:y,type:"scatter",mode:"lines",
+      line:{color:PALETTE[p%PALETTE.length],width:1.3},opacity:0.85,hoverinfo:"skip"});
+  }
+  traces.push({x:[1,steps],y:[e.mean,e.mean],type:"scatter",mode:"lines",
+    line:{color:RED,width:2.5,dash:"dash"},name:"true mean"});
+  Plotly.react("plot",traces,{
+    margin:{l:60,r:15,t:14,b:48},height:420,
+    xaxis:{title:"number of trials (log scale)",type:"log",gridcolor:"#e6ecf3"},
+    yaxis:{title:e.label,gridcolor:"#e6ecf3"},
+    paper_bgcolor:"rgba(0,0,0,0)",plot_bgcolor:"rgba(0,0,0,0)",showlegend:false,
+  },{displayModeBar:false,responsive:true});
+
+  const spread=finalVals.length>1?S.std(finalVals):0;
+  document.getElementById("readout").innerHTML=
+    stat("True mean",e.mean)+stat("Avg. of path endpoints",S.mean(finalVals))+
+    stat("Spread at the end",spread);
+}
+function stat(l,v){return '<div class="stat"><b>'+l+'</b><br><span class="num">'+(+v).toFixed(4)+'</span></div>';}
+
+els.exp.addEventListener("change",draw);
+els.steps.addEventListener("input",()=>{els.valSteps.textContent=els.steps.value;draw();});
+els.paths.addEventListener("input",()=>{els.valPaths.textContent=els.paths.value;draw();});
+document.getElementById("run").addEventListener("click",()=>{rng=S.makeRNG((Math.random()*1e9)|0);draw();});
+draw();
+</script>
+<script src="assets/site.js"></script>
+</body>
+</html>

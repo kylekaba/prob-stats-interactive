@@ -1,0 +1,250 @@
+\chapter{An Overview of Statistical Inference}
+\label{ch:inference}
+
+Exploratory data analysis describes a dataset. \emph{Statistical inference} goes
+further: it uses the data to draw conclusions about the unknown distribution that
+generated them. Given a sample $X_1,\dots,X_n\sim F$, we want to infer $F$, or
+some feature of it such as its mean or variance. This chapter surveys the three
+central inference problems—\emph{point estimation}, \emph{confidence intervals},
+and \emph{hypothesis testing}—and introduces the $t$ distribution that the later
+chapters depend on.
+
+\section{Statistical Models}
+
+A \emph{statistical model} is a set $\mathcal F$ of candidate distributions. A
+\emph{parametric} model is one indexed by finitely many parameters, written
+$\mathcal F=\{f(x;\theta):\theta\in\Theta\}$, where $\theta$ ranges over a
+parameter space $\Theta$. For example, the normal model
+\[
+  \mathcal F=\Bigl\{\,f(x;\mu,\sigma)=\tfrac{1}{\sigma\sqrt{2\pi}}e^{-\frac12((x-\mu)/\sigma)^2}:\ \mu\in\R,\ \sigma>0\Bigr\}
+\]
+has two parameters. If only one parameter interests us—say $\mu$—the others are
+called \emph{nuisance} parameters. A \emph{nonparametric} model assumes no such
+finite-dimensional form; estimating an unknown cdf by the empirical cdf of
+Chapter~\ref{ch:eda} is a nonparametric procedure.
+
+\section{Point Estimation}
+
+A \emph{point estimator} of a parameter $\theta$ is a function of the data,
+$\hat\theta_n=g(X_1,\dots,X_n)$, intended as a single best guess. Because it
+depends on the random sample, $\hat\theta_n$ is itself a random variable, with a
+distribution called its \emph{sampling distribution}. Several quantities measure
+the quality of an estimator:
+\begin{itemize}[leftmargin=1.4em,topsep=2pt,itemsep=1pt]
+  \item the \emph{bias}, $\mathrm{bias}(\hat\theta_n)=\E[\hat\theta_n]-\theta$;
+        the estimator is \emph{unbiased} if $\E[\hat\theta_n]=\theta$;
+  \item the \emph{standard error} $\mathrm{se}=\sqrt{\Var(\hat\theta_n)}$, the
+        standard deviation of the sampling distribution (its estimate is
+        $\widehat{\mathrm{se}}$);
+  \item the \emph{mean squared error}
+        $\mathrm{MSE}=\E[(\hat\theta_n-\theta)^2]$.
+\end{itemize}
+These are linked by a fundamental identity.
+
+\begin{theorem}
+The mean squared error decomposes as
+$\mathrm{MSE}=\bigl(\mathrm{bias}(\hat\theta_n)\bigr)^2+\Var(\hat\theta_n).$
+\end{theorem}
+
+An estimator is \emph{asymptotically normal} if
+$(\hat\theta_n-\theta)/\mathrm{se}$ converges to $\N(0,1)$ as $n\to\infty$; many
+estimators are, thanks to the central limit theorem.
+
+\begin{example}[Estimating a Bernoulli probability]
+Let $X_1,\dots,X_n\sim\Ber(p)$ and let $\hat p_n=\Xbar_n=\tfrac1n\sum X_i$. Then
+$\E[\hat p_n]=\tfrac1n\sum\E[X_i]=p$, so $\hat p_n$ is unbiased. Its standard
+error is $\mathrm{se}=\sqrt{\Var(\hat p_n)}=\sqrt{p(1-p)/n}$, estimated by
+$\widehat{\mathrm{se}}=\sqrt{\hat p_n(1-\hat p_n)/n}$.
+\end{example}
+
+\section{Confidence Intervals}
+
+A \emph{$1-\alpha$ confidence interval} for $\theta$ is a random interval
+$C_n=(a,b)$, computed from the data, with
+\[
+  \Prob(\theta\in C_n)\ge 1-\alpha\quad\text{for all }\theta.
+\]
+We call $1-\alpha$ the \emph{coverage}.
+
+\begin{remark}[How to read a confidence interval]
+A confidence interval is \emph{not} a probability statement about $\theta$:
+$\theta$ is a fixed (if unknown) number, not random. The randomness is in the
+interval. The honest interpretation is a long-run one: if you construct a $95\%$
+interval every day—for entirely unrelated parameters—about $95\%$ of those
+intervals will trap their target. Each individual interval either contains
+$\theta$ or it does not (Figure~\ref{fig:cicov}). When a newspaper reports a poll
+``accurate to within $4$ points $95\%$ of the time,'' it is describing exactly
+this kind of interval.
+\end{remark}
+
+\begin{figure}[ht]
+  \centering
+  \includegraphics[width=0.5\linewidth]{ci_coverage}
+  \caption{Twenty-five $95\%$ confidence intervals for the same $\theta$. About
+  one in twenty misses (shown in red). No single interval ``contains $\theta$
+  with probability $0.95$''—it either does or does not.}
+  \label{fig:cicov}
+\end{figure}
+
+\subsection{Normal-based intervals}
+
+When $\hat\theta_n\approx\N(\theta,\widehat{\mathrm{se}}^{\,2})$, we obtain an
+approximate interval by going $z_{\alpha/2}$ standard errors either side of the
+estimate:
+\[
+  C_n=\bigl(\hat\theta_n-z_{\alpha/2}\,\widehat{\mathrm{se}},\ \hat\theta_n+z_{\alpha/2}\,\widehat{\mathrm{se}}\bigr),
+\]
+where $z_{\alpha/2}$ satisfies $\Prob(-z_{\alpha/2}<Z<z_{\alpha/2})=1-\alpha$ for
+$Z\sim\N(0,1)$ (Figure~\ref{fig:normalci}). For $95\%$ coverage,
+$z_{\alpha/2}=1.96\approx 2$, giving the rule of thumb
+$\hat\theta_n\pm 2\,\widehat{\mathrm{se}}$.
+
+\begin{figure}[ht]
+  \centering
+  \includegraphics[width=0.55\linewidth]{normal_ci}
+  \caption{The critical value $z_{\alpha/2}$ cuts off probability $\alpha/2$ in
+  each tail, leaving central probability $1-\alpha$.}
+  \label{fig:normalci}
+\end{figure}
+
+\begin{example}[Confidence interval for a proportion]
+For $X_1,\dots,X_n\sim\Ber(p)$, the CLT gives $\hat p_n\approx\N(p,\mathrm{se}^2)$
+for large $n$, so an approximate $1-\alpha$ interval for $p$ is
+\[
+  \hat p_n\pm z_{\alpha/2}\sqrt{\frac{\hat p_n(1-\hat p_n)}{n}}.
+\]
+Because we substitute $\widehat{\mathrm{se}}$ for the unknown $\mathrm{se}$, the
+coverage is only approximately correct, improving as $n$ grows.
+\end{example}
+
+\begin{example}[Known variance: a bottling machine]
+A machine fills bottles with volumes that are $\N(\mu,\sigma^2)$ with
+$\sigma=5$ ml \emph{known}. A sample of $16$ bottles has $\xbar=743$ ml.
+Construct a $95\%$ confidence interval for $\mu$.
+
+\solution With $\sigma$ known, $\Xbar\sim\N(\mu,\sigma^2/n)$ exactly, so
+$\mathrm{se}=\sigma/\sqrt n$ and the interval is
+\[
+  \xbar\pm z_{.025}\frac{\sigma}{\sqrt n}=743\pm 1.96\cdot\frac{5}{\sqrt{16}}=(740.55,\ 745.45)\ \text{ml}. \qedhere
+\]
+\end{example}
+
+\section{The $t$ Distribution}
+
+In practice $\sigma$ is rarely known and must be estimated from the data by the
+sample standard deviation $S_n$. For \emph{small} samples this substitution is
+not negligible, and the right reference distribution is no longer the normal but
+the $t$ distribution.
+
+\begin{definition}
+If $Z\sim\N(0,1)$ and $\chi^2_n$ (a \emph{chi-square} variable with $n$ degrees of
+freedom—the sum of squares of $n$ independent standard normals) are independent,
+then $T_n=Z/\sqrt{\chi^2_n/n}$ has a \emph{$t$ distribution with $n$ degrees of
+freedom}.
+\end{definition}
+
+Like the normal, the $t$ density is symmetric about zero, but it has
+\emph{thicker tails}, reflecting the extra uncertainty from estimating $\sigma$
+(Figure~\ref{fig:ttails}). As the degrees of freedom grow, $\chi^2_n/n\to 1$ by
+the law of large numbers, and the $t$ density approaches $\N(0,1)$
+(Figure~\ref{fig:tdist}).
+
+\begin{figure}[ht]
+  \centering
+  \includegraphics[width=0.6\linewidth]{tdist}
+  \caption{The $t$ density with $1$, $5$, and $10$ degrees of freedom, approaching
+  $\N(0,1)$ (dashed) as the degrees of freedom increase.}
+  \label{fig:tdist}
+\end{figure}
+
+\begin{figure}[ht]
+  \centering
+  \includegraphics[width=0.5\linewidth]{tdist_tails}
+  \caption{The $t$ density (here with $5$ df) has heavier tails than the standard
+  normal, accounting for the added variability of an estimated $\sigma$.}
+  \label{fig:ttails}
+\end{figure}
+
+The key fact is that for an i.i.d.\ $\N(\mu,\sigma^2)$ sample with $\sigma$
+unknown,
+\[
+  \frac{\sqrt n\,(\Xbar_n-\mu)}{S_n}\sim t_{n-1},
+\]
+\emph{exactly}, not merely approximately. This yields an exact confidence
+interval $\xbar\pm t_{\alpha/2,\,n-1}\,s/\sqrt n$ for $\mu$.
+
+\begin{example}[Unknown variance, small sample: caloric content of coal]
+Twenty-two measurements of the gross caloric content of a coal shipment give
+$\xbar=31.012$ MJ/kg and $s=0.1294$, with the accuracy of the method in doubt
+(so $\sigma$ is treated as unknown). Find a $95\%$ confidence interval for the
+true mean $\mu$.
+
+\solution With $n=22$ we use $t_{.025,\,21}=2.080$:
+\[
+  31.012\pm 2.080\cdot\frac{0.1294}{\sqrt{22}}=(30.954,\ 31.069).
+\]
+This interval is about $50\%$ wider than the corresponding known-$\sigma$
+interval would be, both because we use the larger estimate $s$ in place of
+$\sigma$ and because the critical value $2.080$ exceeds $1.96$. Estimating the
+spread costs us precision.
+\end{example}
+
+\begin{example}[Large sample: $t$ and $z$ nearly agree]
+A normal sample of size $34$ has $\xbar=3.54$ and $s=0.13$. Construct a $98\%$
+confidence interval for $\mu$.
+
+\solution The exact interval uses $t_{.01,\,33}\approx 2.45$:
+\[
+  3.54\pm 2.45\cdot\frac{0.13}{\sqrt{34}}\approx(3.49,\ 3.59),
+\]
+while the large-sample approximation with $z_{.01}=2.33$ gives a slightly
+narrower $(3.49,3.59)$ as well. For samples this large the $t$ and normal
+intervals are nearly identical, which is why the normal approximation is so
+widely used.
+\end{example}
+
+We summarize the standard intervals.
+
+\begin{center}
+\renewcommand{\arraystretch}{1.3}
+\begin{tabular}{@{}llll@{}}
+\toprule
+Situation & Target & Sampling law of $\Xbar$ & $1-\alpha$ interval\\
+\midrule
+$\Ber(p)$ & $p$ & $\approx$ normal (CLT) & $\xbar\pm z_{\alpha/2}\sqrt{\xbar(1-\xbar)/n}$\\
+$\N(\mu,\sigma^2)$, $\sigma$ known & $\mu$ & exactly normal & $\xbar\pm z_{\alpha/2}\,\sigma/\sqrt n$\\
+$\N(\mu,\sigma^2)$, $\sigma$ unknown & $\mu$ & $t_{n-1}$ & $\xbar\pm t_{\alpha/2,\,n-1}\,s/\sqrt n$\\
+\bottomrule
+\end{tabular}
+\end{center}
+
+\section{Hypothesis Testing}
+
+The third inference problem starts from a default theory—the \emph{null
+hypothesis} $H_0$—and asks whether the data provide enough evidence to reject it
+in favor of an \emph{alternative} $H_1$. The logic mirrors a criminal trial: we
+presume $H_0$ (innocence) and reject only on strong evidence.
+
+Two errors are possible. A \emph{type I error} rejects a true $H_0$; its
+probability is denoted $\alpha$ (the same $\alpha$ as the significance level). A
+\emph{type II error} retains $H_0$ when $H_1$ is true; its probability is denoted
+$\beta$.
+
+\begin{center}
+\renewcommand{\arraystretch}{1.3}
+\begin{tabular}{@{}lcc@{}}
+\toprule
+ & Retain $H_0$ & Reject $H_0$\\
+\midrule
+$H_0$ true & correct & type I error ($\alpha$)\\
+$H_1$ true & type II error ($\beta$) & correct\\
+\bottomrule
+\end{tabular}
+\end{center}
+
+For example, to test whether a coin is fair we would set $H_0:p=\tfrac12$ against
+$H_1:p\neq\tfrac12$; to calibrate an automated speed trap so that at most $5\%$ of
+ticketed drivers were not actually speeding, we would fix the type I error at
+$0.05$. The machinery for carrying out such tests—test statistics, $p$-values,
+and significance levels—is developed in Chapters~\ref{ch:leastsquares}
+and~\ref{ch:gof}.

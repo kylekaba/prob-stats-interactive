@@ -1,0 +1,325 @@
+\chapter{The Method of Least Squares}
+\label{ch:leastsquares}
+
+When two quantities are related—a wood's density and its hardness, calcium in
+drinking water and a town's mortality—we often want to summarize the relationship
+by a line and to use it for prediction. The method of \emph{least squares} fits
+such a line by minimizing the total squared vertical distance between the data
+and the line. Remarkably, this turns out to be maximum likelihood in disguise,
+under the assumption that the measurement errors are normal.
+
+\section{The Simple Linear Regression Model}
+
+The \emph{simple linear regression model} for a bivariate dataset
+$(x_1,y_1),\dots,(x_n,y_n)$ treats the $x_i$ as fixed and the responses as random:
+\[
+  Y_i=\alpha+\beta x_i+U_i,\qquad i=1,\dots,n,
+\]
+where $U_1,\dots,U_n$ are independent with mean $0$ and variance $\sigma^2$.
+Equivalently, $Y_i\sim\N(\alpha+\beta x_i,\sigma^2)$: at each setting of $x$ there
+is a whole population of possible responses, normally distributed about the line
+$\E[Y]=\alpha+\beta x$, all sharing the same variance. The line's height shifts
+with $x$, but the spread does not.
+
+\section{Least Squares Is Maximum Likelihood}
+
+To fit the line we choose $\alpha,\beta$ minimizing the sum of squared vertical
+distances
+\[
+  S(\alpha,\beta)=\sum_{i=1}^n\bigl(y_i-\alpha-\beta x_i\bigr)^2.
+\]
+This is not an arbitrary choice. Under the normal model the loglikelihood is
+\[
+  \ell(\alpha,\beta,\sigma)=-n\ln\sigma-n\ln\sqrt{2\pi}-\frac{1}{2\sigma^2}\sum_{i=1}^n(y_i-\alpha-\beta x_i)^2,
+\]
+which, for any fixed $\sigma$, is maximized precisely when $S(\alpha,\beta)$ is
+minimized. Least squares \emph{is} maximum likelihood for normal errors—one
+reason normal-error models dominate applications. (Differentiating $\ell$ in
+$\sigma$ also gives the MLE
+$\hat\sigma=\sqrt{\tfrac1n\sum(Y_i-\hat\alpha-\hat\beta x_i)^2}$.)
+
+As Figure~\ref{fig:ssparab} suggests, $S(\alpha,\beta)$ is an upward-opening
+bowl (an elliptic paraboloid), so it has a unique minimum—except in the
+degenerate case where all $x_i$ are equal.
+
+\begin{figure}[ht]
+  \centering
+  \includegraphics[width=0.52\linewidth]{ss_paraboloid}
+  \caption{The sum-of-squares surface $S(\alpha,\beta)$ is a bowl with a single
+  lowest point $(\hat\alpha,\hat\beta)$.}
+  \label{fig:ssparab}
+\end{figure}
+
+\section{The Normal Equations and the Estimates}
+
+Setting the partial derivatives of $S$ to zero yields the \emph{normal
+equations}
+\[
+  n\alpha+\beta\sum x_i=\sum y_i,\qquad
+  \alpha\sum x_i+\beta\sum x_i^2=\sum x_iy_i,
+\]
+a $2\times 2$ linear system whose solution is the pair of least-squares estimates
+\[
+  \hat\beta=\frac{n\sum x_iy_i-(\sum x_i)(\sum y_i)}{n\sum x_i^2-(\sum x_i)^2},
+  \qquad \hat\alpha=\ybar_n-\hat\beta\,\xbar_n.
+\]
+The second formula shows that the fitted line always passes through the center of
+mass $(\xbar_n,\ybar_n)$ of the data.
+
+\begin{example}[A three-point fit]
+Fit the least-squares line to $(1,2),(3,1.8),(5,1)$, and find the residuals.
+
+\solution With $\sum x_i=9$, $\sum y_i=4.8$, $\sum x_i^2=35$, $\sum x_iy_i=12.4$,
+and $n=3$,
+\[
+  \hat\beta=\frac{3(12.4)-9(4.8)}{3(35)-9^2}=-0.25,\qquad
+  \hat\alpha=1.6-(-0.25)(3)=2.35,
+\]
+so the line is $y=2.35-0.25x$ (Figure~\ref{fig:toyreg}). The residuals
+$r_i=y_i-\hat\alpha-\hat\beta x_i$ are $-0.1,\,0.2,\,-0.1$, which sum to zero—as
+they always must.
+\end{example}
+
+\begin{figure}[ht]
+  \centering
+  \includegraphics[width=0.42\linewidth]{toy_regression}
+  \caption{The least-squares line for three points; the dotted segments are the
+  residuals being minimized.}
+  \label{fig:toyreg}
+\end{figure}
+
+\begin{example}[Predicting timber hardness]
+For $36$ Australian hardwoods, regressing Janka hardness on density gives
+$\hat\alpha=-1160.5$ and $\hat\beta=57.51$. Predict the hardness of a specimen of
+density $65$.
+
+\solution Substitute into the fitted line:
+$\hat y=-1160.5+57.51(65)\approx 2577.7$. The regression line turns an
+easily-measured density into a prediction of the hard-to-measure hardness.
+\end{example}
+
+\section{Unbiasedness of the Estimators}
+
+The least-squares estimators are unbiased.
+
+\begin{example}[$\hat\beta$ is unbiased]
+Show $\E[\hat\beta]=\beta$ in the model $Y_i=\alpha+\beta x_i+U_i$.
+
+\solution Since the $x_i$ are constants and $\E[Y_i]=\alpha+\beta x_i$, linearity
+gives
+\[
+  \E[\hat\beta]=\frac{n\sum x_i\E[Y_i]-(\sum x_i)(\sum\E[Y_i])}{n\sum x_i^2-(\sum x_i)^2}
+   =\frac{n\sum x_i(\alpha+\beta x_i)-(\sum x_i)\sum(\alpha+\beta x_i)}{n\sum x_i^2-(\sum x_i)^2}.
+\]
+The $\alpha$-terms cancel and the numerator collapses to
+$\beta\bigl(n\sum x_i^2-(\sum x_i)^2\bigr)$, which is exactly the denominator
+times $\beta$. Hence $\E[\hat\beta]=\beta$. It follows that
+$\E[\hat\alpha]=\E[\Ybar_n]-\xbar_n\E[\hat\beta]=(\alpha+\beta\xbar_n)-\xbar_n\beta=\alpha$,
+so $\hat\alpha$ is unbiased too.
+\end{example}
+
+For the error variance, the MLE $\tfrac1n\sum(Y_i-\hat\alpha-\hat\beta x_i)^2$
+turns out to have expectation $\tfrac{n-2}{n}\sigma^2$, so the \emph{unbiased}
+estimator divides by $n-2$ instead:
+\[
+  \hat\sigma^2=\frac{1}{n-2}\sum_{i=1}^n\bigl(Y_i-\hat\alpha-\hat\beta x_i\bigr)^2.
+\]
+We lose two degrees of freedom because two parameters, $\alpha$ and $\beta$, were
+estimated from the same data.
+
+\section{Residuals and Model Checking}
+
+The \emph{residuals} $r_i=y_i-\hat\alpha-\hat\beta x_i$ are the leftover vertical
+distances. They always sum to zero (because the line passes through
+$(\xbar,\ybar)$), and plotting them against $x_i$ is the standard diagnostic. If
+the linear model is right, the residual plot should look like featureless random
+scatter about zero, as for the black cherry tree data
+(Figure~\ref{fig:resgood}).
+
+\begin{figure}[ht]
+  \centering
+  \includegraphics[width=0.55\linewidth]{residuals_good}
+  \caption{Residuals with no trend: the linear model is adequate.}
+  \label{fig:resgood}
+\end{figure}
+
+A \emph{pattern} in the residuals signals a misspecified model. For the timber
+data, the residuals from a straight-line fit bend in a parabola
+(Figure~\ref{fig:restimber}, left), suggesting a quadratic term:
+\[
+  Y_i=\alpha+\beta x_i+\gamma x_i^2+U_i.
+\]
+(This is still called a \emph{linear} model—linear in the parameters
+$\alpha,\beta,\gamma$, even though the fitted curve is a parabola; see
+Figure~\ref{fig:timberscatter}.) After adding the quadratic term, the residuals
+lose their bend but begin to \emph{fan out} (Figure~\ref{fig:restimber}, right):
+their spread grows with $x$. This is \emph{heteroscedasticity}—a violation of the
+equal-variance assumption—as opposed to the constant-variance ideal of
+\emph{homoscedasticity}. One remedy is weighted least squares, which we do not
+pursue here.
+
+\begin{figure}[ht]
+  \centering
+  \includegraphics[width=\linewidth]{residuals_timber}
+  \caption{Left: a straight-line fit to the timber data leaves a parabolic
+  trend. Right: after adding a quadratic term the trend is gone, but the
+  residuals fan out, revealing heteroscedasticity.}
+  \label{fig:restimber}
+\end{figure}
+
+\begin{figure}[ht]
+  \centering
+  \includegraphics[width=0.5\linewidth]{timber_scatter}
+  \caption{Janka hardness versus density with a fitted quadratic. The model is
+  linear in its parameters even though the curve is not a straight line.}
+  \label{fig:timberscatter}
+\end{figure}
+
+\section{Regression Through the Origin}
+
+Sometimes the intercept should be zero on physical grounds. For the black cherry
+tree data, the response $y$ is timber volume and the predictor is $x=d^2h$
+(diameter squared times height); as a tree shrinks to nothing, $x\to 0$ forces
+$y\to 0$, so the model $Y_i=\beta x_i+U_i$ with no intercept is natural.
+
+\begin{example}[The no-intercept slope]
+Minimize $S(\beta)=\sum(y_i-\beta x_i)^2$ to derive the slope estimate.
+
+\solution Differentiating, $S'(\beta)=-2\sum(y_i-\beta x_i)x_i=0$ gives
+\[
+  \hat\beta=\frac{\sum_{i=1}^n x_iy_i}{\sum_{i=1}^n x_i^2}. \qedhere
+\]
+\end{example}
+
+\begin{example}[Three competing slope estimators]
+For the no-intercept model, three natural estimators of $\beta$ are the average of
+ratios $B_1=\tfrac1n\sum\tfrac{Y_i}{x_i}$, the ratio of averages
+$B_2=\tfrac{\sum Y_i}{\sum x_i}$, and the least-squares estimator
+$B_3=\tfrac{\sum x_iY_i}{\sum x_i^2}$. Show all three are unbiased, and compare
+them on the cherry tree data.
+
+\solution Each is a linear combination of the $Y_i$ with $\E[Y_i]=\beta x_i$, so
+$\E[B_1]=\E[B_2]=\E[B_3]=\beta$: all unbiased. Numerically, using
+$\sum x_i=87.456$, $\sum y_i=26.486$, $\sum y_i/x_i=9.369$, $\sum x_iy_i=95.498$,
+$\sum x_i^2=314.644$, the three estimates are
+\[
+  B_1\approx 0.302,\qquad B_2\approx 0.303,\qquad B_3\approx 0.3035.
+\]
+They are close but not identical (Figure~\ref{fig:cherryreg}). Unbiasedness alone
+does not single out a winner—efficiency does, and the least-squares estimator
+$B_3$ is the one with smallest variance.
+\end{example}
+
+\begin{figure}[ht]
+  \centering
+  \includegraphics[width=0.5\linewidth]{cherry_regression}
+  \caption{Black cherry tree volumes against $x=d^2h$ with the no-intercept
+  least-squares line.}
+  \label{fig:cherryreg}
+\end{figure}
+
+\section{Testing Whether a Coefficient Belongs}
+
+A central question in regression is whether a coefficient is really nonzero, or
+whether the apparent effect could be chance. We test, say, $H_0:\beta=\beta_0$
+using a \emph{test statistic}
+\[
+  T_b=\frac{\hat\beta-\beta_0}{S_b},\qquad S_b^2=\frac{n}{n\sum x_i^2-(\sum x_i)^2}\,\hat\sigma^2,
+\]
+which standardizes the estimate by an estimate of its standard deviation. Under
+$H_0$, $T_b$ has a $t$ distribution with $n-2$ degrees of freedom. Values near
+zero support $H_0$; large values argue against it.
+
+The strength of evidence is summarized by a \emph{$p$-value}—the probability,
+\emph{if $H_0$ were true}, of a test statistic at least as extreme as the one
+observed. A small $p$-value is strong evidence against $H_0$. If we reject when
+the $p$-value falls below a threshold, that threshold is the \emph{significance
+level}. A common informal scale:
+\begin{center}
+\renewcommand{\arraystretch}{1.15}
+\begin{tabular}{@{}ll@{}}
+\toprule
+$p$-value & evidence against $H_0$\\
+\midrule
+$<0.01$ & very strong\\
+$0.01$--$0.05$ & strong\\
+$0.05$--$0.10$ & weak\\
+$>0.10$ & little to none\\
+\bottomrule
+\end{tabular}
+\end{center}
+
+\begin{remark}
+The $p$-value is \emph{not} $\Prob(H_0\text{ true}\mid\text{data})$—that
+quantity belongs to Bayesian inference. The $p$-value is the smallest
+significance level at which the data would lead us to reject $H_0$.
+\end{remark}
+
+\begin{example}[Does the cherry-tree intercept belong?]
+Fitting the cherry tree data \emph{with} an intercept and testing $H_0:\alpha=0$
+(we expect no intercept, since zero size should mean zero volume), the test
+statistic is $t_a=-0.428$ on $29$ degrees of freedom, giving a one-sided
+$p$-value $\Prob(t_{29}\le -0.428)=0.336$.
+
+\solution This $p$-value is large, so we retain $H_0$: the data are entirely
+consistent with a zero intercept, confirming the physical reasoning behind the
+no-intercept model.
+\end{example}
+
+\begin{example}[Does calcium affect mortality?]
+For $61$ English towns, mortality rate $y$ is regressed on calcium concentration
+$x$ (Figure~\ref{fig:mortality}). We test $H_0:\beta=0$ against $H_1:\beta<0$
+(more calcium, lower mortality). The fit gives $\hat\beta=-3.226$ and
+$s_b=0.485$, so $t_b=-6.656$ on $59$ degrees of freedom.
+
+\solution The corresponding $p$-value is about $5\times10^{-9}$—overwhelming
+evidence against $H_0$. We conclude that higher calcium concentrations are
+genuinely associated with lower mortality, not an artifact of chance.
+\end{example}
+
+\begin{figure}[ht]
+  \centering
+  \includegraphics[width=0.52\linewidth]{mortality_scatter}
+  \caption{Mortality rate against calcium concentration for $61$ towns, with the
+  least-squares line. The downward slope is highly significant.}
+  \label{fig:mortality}
+\end{figure}
+
+\section{Reading a Regression Summary}
+
+Statistical software reports several diagnostics for a fitted regression. The most
+important is $R^2$, the \emph{coefficient of determination},
+\[
+  R^2=1-\frac{SS_{\mathrm{res}}}{SS_{\mathrm{tot}}},\qquad
+  SS_{\mathrm{res}}=\sum_i(y_i-\hat y_i)^2,\quad SS_{\mathrm{tot}}=\sum_i(y_i-\ybar)^2,
+\]
+the fraction of the response's variation explained by the model. In simple linear
+regression $R^2$ is just the square of the empirical correlation coefficient.
+Figure~\ref{fig:rsq} illustrates the idea: $SS_{\mathrm{tot}}$ measures spread
+about the flat mean line, $SS_{\mathrm{res}}$ about the fitted line; the more the
+line shrinks the squares, the closer $R^2$ is to one.
+
+\begin{figure}[ht]
+  \centering
+  \includegraphics[width=\linewidth]{r_squared}
+  \caption{$R^2=1-SS_{\mathrm{res}}/SS_{\mathrm{tot}}$. The red squares (left)
+  measure deviations from the mean; the blue squares (right) measure deviations
+  from the fitted line. Smaller blue squares mean a better fit and larger $R^2$.}
+  \label{fig:rsq}
+\end{figure}
+
+A summary also reports the \emph{adjusted} $R^2$, which penalizes extra
+parameters and so guards against overfitting; the \emph{residual standard error},
+$\hat\sigma$ on $n-2$ degrees of freedom (two parameters estimated); and an
+\emph{$F$-test} of whether the regression coefficients are jointly zero. In
+simple linear regression the $F$-test merely echoes the $t$-test for the slope,
+but it becomes genuinely informative when several predictors are present.
+
+Finally, $95\%$ confidence intervals for the parameters are obtained from the $t$
+distribution with $n-2$ degrees of freedom. For the mortality data, the interval
+for the calcium slope $\beta$ is about $(-0.0042,-0.0023)$—comfortably below
+zero, consistent with the highly significant test above. For the quadratic timber
+fit, the intercept's interval $(-804,556)$ comfortably contains zero, as physical
+reasoning predicts, while the quadratic coefficient's interval
+$(0.19,0.82)$ excludes zero, confirming that the curvature is real. Wide
+intervals like the timber ones can be narrowed only by gathering more data.

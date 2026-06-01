@@ -1,0 +1,128 @@
+\chapter{Mathematical Prerequisites}
+\label{ch:prereq}
+
+Probability and statistics lean heavily on a handful of tools from calculus.
+Expectations of continuous random variables are integrals; the maximum
+likelihood method finds estimates by differentiating and setting the
+derivative to zero; tail probabilities are computed by integrating density
+functions. Before we begin, this short chapter revisits the differentiation
+and integration techniques that recur throughout the book. A reader fluent in
+single-variable calculus may skip directly to Chapter~\ref{ch:probability} and
+refer back as needed.
+
+\section{Differentiation}
+
+The two rules we use most often are the \emph{product rule}
+\[
+  \frac{d}{dx}\bigl(u(x)\,v(x)\bigr) = u'(x)\,v(x) + u(x)\,v'(x)
+\]
+and the \emph{chain rule}
+\[
+  \frac{d}{dx}\,f\bigl(g(x)\bigr) = f'\bigl(g(x)\bigr)\,g'(x).
+\]
+Together with the quotient rule and the elementary derivatives of $e^x$,
+$\ln x$, and the trigonometric functions, these handle essentially every
+derivative that arises in this course.
+
+\begin{example}
+Differentiate $f(x) = x^2 \ln x$.
+
+\solution The function is a product, so the product rule with $u=x^2$ and
+$v=\ln x$ gives
+\[
+  f'(x) = (2x)\ln x + x^2\cdot\frac{1}{x} = 2x\ln x + x.
+\]
+\end{example}
+
+\begin{example}
+Let $f(x) = x e^{-x}$. Find $f'(x)$ and $f''(x)$.
+
+\solution Applying the product rule once,
+\[
+  f'(x) = e^{-x} + x(-e^{-x}) = e^{-x} - xe^{-x}.
+\]
+Differentiating again, and reusing the result just obtained for the second
+term,
+\[
+  f''(x) = -e^{-x} - \bigl(e^{-x} - xe^{-x}\bigr)
+         = -2e^{-x} + xe^{-x}.
+\]
+This particular function reappears when we study the gamma-type densities and
+integration by parts.
+\end{example}
+
+\begin{example}
+Differentiate $y = e^{-(x-1)^2/2}$.
+
+\solution This is a composition, so we peel it apart with the chain rule. The
+outer function is $e^{u}$ with $u = -\tfrac12(x-1)^2$, and $u' = -(x-1)$. Hence
+\[
+  \frac{dy}{dx} = e^{-(x-1)^2/2}\cdot\bigl(-(x-1)\bigr)
+              = -(x-1)\,e^{-(x-1)^2/2}.
+\]
+The exponent here is precisely the kernel of the standard normal density,
+which is why this derivative shows up when we maximize normal likelihoods.
+\end{example}
+
+\section{Integration}
+
+The reverse operation, integration, computes areas and—crucially for us—the
+expectations and probabilities of continuous random variables. We use basic
+antiderivatives, linearity, the substitution rule, and integration by parts.
+
+\subsection{Antiderivatives and definite integrals}
+
+\begin{example}
+Evaluate $\displaystyle\int\!\left(x^3 + e^x\right)dx$ and
+$\displaystyle\int\!\left(2\theta + \tfrac{1}{\theta}\right)d\theta$.
+
+\solution Integrating term by term,
+\[
+  \int\!\left(x^3 + e^x\right)dx = \frac{x^4}{4} + e^x + C,
+  \qquad
+  \int\!\left(2^\theta + \tfrac{1}{\theta}\right)d\theta
+     = \frac{2^\theta}{\ln 2} + \ln|\theta| + C.
+\]
+(The exponential $2^\theta$ has antiderivative $2^\theta/\ln 2$ because
+$\frac{d}{d\theta}2^\theta = 2^\theta\ln 2$.)
+\end{example}
+
+\begin{example}
+Evaluate the definite integral $\displaystyle\int_0^{\pi/2} -2\cos\theta\,d\theta$.
+
+\solution An antiderivative of $-2\cos\theta$ is $-2\sin\theta$, so
+\[
+  \int_0^{\pi/2} -2\cos\theta\,d\theta
+     = \bigl[-2\sin\theta\bigr]_0^{\pi/2}
+     = -2\sin(\tfrac{\pi}{2}) + 2\sin 0 = -2.
+\]
+\end{example}
+
+\subsection{Integration by parts}
+
+The integration-by-parts formula,
+\[
+  \int u\,dv = uv - \int v\,du,
+\]
+is indispensable for computing expectations of the form $\int x f(x)\,dx$ when
+$f$ involves an exponential. We will use it repeatedly—for instance to show
+that an $\Exp(\lambda)$ random variable has mean $1/\lambda$, and that the
+square of a standard normal random variable has expectation $1$.
+
+\begin{example}
+Use integration by parts to evaluate
+$\displaystyle\int_0^\infty x\,\lambda e^{-\lambda x}\,dx$ for $\lambda > 0$.
+
+\solution Take $u = x$ and $dv = \lambda e^{-\lambda x}\,dx$, so that
+$du = dx$ and $v = -e^{-\lambda x}$. Then
+\[
+  \int_0^\infty x\,\lambda e^{-\lambda x}\,dx
+    = \Bigl[-xe^{-\lambda x}\Bigr]_0^\infty + \int_0^\infty e^{-\lambda x}\,dx
+    = 0 + \left[-\frac{1}{\lambda}e^{-\lambda x}\right]_0^\infty
+    = \frac{1}{\lambda}.
+\]
+This is exactly the mean of an exponential random variable with rate
+$\lambda$, a fact we will meet again in Chapter~\ref{ch:continuous}.
+\end{example}
+
+With these tools in hand we are ready to build the theory of probability.

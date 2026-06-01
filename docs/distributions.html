@@ -1,0 +1,196 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>Probability Distributions — Interactive</title>
+<link rel="stylesheet" href="assets/style.css">
+<script src="https://cdn.plot.ly/plotly-2.35.2.min.js" charset="utf-8"></script>
+<script>
+window.MathJax={tex:{inlineMath:[['\\(','\\)']]},svg:{fontCache:'global'}};
+</script>
+<script src="https://cdn.jsdelivr.net/npm/mathjax@3/es5/tex-mml-chtml.js" async></script>
+</head>
+<body data-page="distributions">
+<main class="wrap narrow">
+  <h1>Probability Distributions</h1>
+  <p class="lead">Choose a distribution and drag its parameters. The graph, the mean
+  (dashed line), and the summary statistics all update in real time — the same
+  families introduced in Chapters&nbsp;3 and&nbsp;4.</p>
+
+  <div class="widget">
+    <div class="control" style="max-width:320px">
+      <label for="dist">Distribution</label>
+      <select id="dist">
+        <option value="normal">Normal  𝒩(μ, σ²)</option>
+        <option value="binomial">Binomial  Bin(n, p)</option>
+        <option value="poisson">Poisson  Pois(μ)</option>
+        <option value="geometric">Geometric  Geo(p)</option>
+        <option value="exponential">Exponential  Exp(λ)</option>
+      </select>
+    </div>
+
+    <div id="plot" class="plot"></div>
+
+    <div id="controls" class="controls"></div>
+
+    <div class="readout" id="readout"></div>
+    <p class="muted" id="formula" style="margin-top:.8rem"></p>
+  </div>
+
+  <div class="note">
+    <b>Try this.</b> Switch to the <b>Binomial</b> and slide \(n\) up while keeping
+    \(p\) fixed: the bars pile up into a bell shape — a preview of the
+    <a href="clt.html">Central Limit Theorem</a>. Or set the Poisson mean small and
+    watch how a rare-event count concentrates near zero.
+  </div>
+</main>
+
+<script src="assets/stats.js"></script>
+<script>
+const S = window.Stats;
+const plot = document.getElementById("plot");
+const controlsEl = document.getElementById("controls");
+const readoutEl = document.getElementById("readout");
+const formulaEl = document.getElementById("formula");
+const distSel = document.getElementById("dist");
+
+const COL = "#1f5fa8", COL2 = "#2a8f5a", RED = "#b03030";
+
+// distribution definitions: params (with range), continuous flag, builders
+const DISTS = {
+  normal: {
+    cont: true,
+    params: [
+      {key:"mu", label:"μ (mean)", min:-5, max:5, step:0.1, val:0},
+      {key:"sigma", label:"σ (std. dev.)", min:0.3, max:4, step:0.1, val:1},
+    ],
+    moments: p => ({mean:p.mu, varr:p.sigma*p.sigma}),
+    curve: p => {
+      const xs = S.linspace(p.mu-4*p.sigma, p.mu+4*p.sigma, 240);
+      return {xs, ys: xs.map(x=>S.normalPdf(x,p.mu,p.sigma))};
+    },
+    formula: "\\(f(x)=\\dfrac{1}{\\sigma\\sqrt{2\\pi}}\\,e^{-\\frac12((x-\\mu)/\\sigma)^2}\\)",
+  },
+  binomial: {
+    params: [
+      {key:"n", label:"n (trials)", min:1, max:60, step:1, val:20},
+      {key:"p", label:"p (success prob.)", min:0.01, max:0.99, step:0.01, val:0.4},
+    ],
+    moments: p => ({mean:p.n*p.p, varr:p.n*p.p*(1-p.p)}),
+    bars: p => {
+      const ks=[], ys=[];
+      for(let k=0;k<=p.n;k++){ks.push(k);ys.push(S.binomialPmf(k,p.n,p.p));}
+      return {ks, ys};
+    },
+    formula: "\\(P(X=k)=\\binom{n}{k}p^k(1-p)^{n-k}\\)",
+  },
+  poisson: {
+    params: [{key:"mu", label:"μ (mean rate)", min:0.2, max:20, step:0.1, val:4}],
+    moments: p => ({mean:p.mu, varr:p.mu}),
+    bars: p => {
+      const kmax=Math.max(10, Math.ceil(p.mu+4*Math.sqrt(p.mu)));
+      const ks=[], ys=[];
+      for(let k=0;k<=kmax;k++){ks.push(k);ys.push(S.poissonPmf(k,p.mu));}
+      return {ks, ys};
+    },
+    formula: "\\(P(X=k)=\\dfrac{\\mu^k e^{-\\mu}}{k!}\\)",
+  },
+  geometric: {
+    params: [{key:"p", label:"p (success prob.)", min:0.05, max:0.95, step:0.01, val:0.35}],
+    moments: p => ({mean:1/p.p, varr:(1-p.p)/(p.p*p.p)}),
+    bars: p => {
+      const kmax=Math.max(10, Math.ceil(5/p.p));
+      const ks=[], ys=[];
+      for(let k=1;k<=kmax;k++){ks.push(k);ys.push(S.geometricPmf(k,p.p));}
+      return {ks, ys};
+    },
+    formula: "\\(P(X=k)=(1-p)^{k-1}p\\)",
+  },
+  exponential: {
+    cont: true,
+    params: [{key:"lambda", label:"λ (rate)", min:0.2, max:3, step:0.05, val:1}],
+    moments: p => ({mean:1/p.lambda, varr:1/(p.lambda*p.lambda)}),
+    curve: p => {
+      const xs = S.linspace(0, 8/p.lambda, 240);
+      return {xs, ys: xs.map(x=>S.exponentialPdf(x,p.lambda))};
+    },
+    formula: "\\(f(x)=\\lambda e^{-\\lambda x},\\quad x\\ge 0\\)",
+  },
+};
+
+let state = {};   // current parameter values
+
+function buildControls(name){
+  const d = DISTS[name];
+  controlsEl.innerHTML = "";
+  state = {};
+  d.params.forEach(pr=>{
+    state[pr.key]=pr.val;
+    const wrap=document.createElement("div"); wrap.className="control";
+    const lab=document.createElement("label");
+    lab.innerHTML = pr.label + ' <span class="val" id="val-'+pr.key+'">'+fmt(pr.val)+'</span>';
+    const inp=document.createElement("input");
+    inp.type="range"; inp.min=pr.min; inp.max=pr.max; inp.step=pr.step; inp.value=pr.val;
+    inp.addEventListener("input",()=>{
+      state[pr.key]=parseFloat(inp.value);
+      document.getElementById("val-"+pr.key).textContent=fmt(state[pr.key]);
+      draw(name);
+    });
+    wrap.appendChild(lab); wrap.appendChild(inp);
+    controlsEl.appendChild(wrap);
+  });
+}
+function fmt(v){ return Number.isInteger(v)?v:(+v).toFixed(2); }
+
+function draw(name){
+  const d = DISTS[name];
+  const m = d.moments(state);
+  let traces, layout;
+  const peak = ()=> d.cont
+    ? Math.max(...d.curve(state).ys)
+    : Math.max(...d.bars(state).ys);
+
+  if(d.cont){
+    const {xs,ys}=d.curve(state);
+    traces=[{x:xs,y:ys,type:"scatter",mode:"lines",fill:"tozeroy",
+      line:{color:COL,width:2.5}, fillcolor:"rgba(31,95,168,.12)", name:"density"}];
+    layout=baseLayout(name,"x","density");
+  } else {
+    const {ks,ys}=d.bars(state);
+    traces=[{x:ks,y:ys,type:"bar",marker:{color:COL,line:{color:"#fff",width:1}},name:"P(X=k)"}];
+    layout=baseLayout(name,"k","probability");
+  }
+  // mean line
+  const top = peak()*1.08;
+  layout.shapes=[{type:"line",x0:m.mean,x1:m.mean,y0:0,y1:top,
+    line:{color:RED,width:2,dash:"dash"}}];
+  layout.annotations=[{x:m.mean,y:top,text:"mean = "+m.mean.toFixed(2),
+    showarrow:false,yanchor:"bottom",font:{color:RED,size:12}}];
+  Plotly.react(plot, traces, layout, {displayModeBar:false,responsive:true});
+
+  readoutEl.innerHTML =
+    statBox("Mean", m.mean) + statBox("Variance", m.varr) +
+    statBox("Std. dev.", Math.sqrt(m.varr));
+  formulaEl.innerHTML = d.formula;
+  if(window.MathJax&&MathJax.typesetPromise) MathJax.typesetPromise([formulaEl]);
+}
+function statBox(label,val){
+  return '<div class="stat"><b>'+label+'</b><br><span class="num">'+val.toFixed(3)+'</span></div>';
+}
+function baseLayout(name,xt,yt){
+  return {
+    margin:{l:55,r:20,t:18,b:45},
+    xaxis:{title:xt,gridcolor:"#e6ecf3",zeroline:false},
+    yaxis:{title:yt,gridcolor:"#e6ecf3",zeroline:false,rangemode:"tozero"},
+    paper_bgcolor:"rgba(0,0,0,0)", plot_bgcolor:"rgba(0,0,0,0)",
+    showlegend:false, bargap:0.04, height:400,
+  };
+}
+
+distSel.addEventListener("change",()=>{ buildControls(distSel.value); draw(distSel.value); });
+buildControls("normal"); draw("normal");
+</script>
+<script src="assets/site.js"></script>
+</body>
+</html>

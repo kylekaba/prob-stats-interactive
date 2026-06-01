@@ -1,0 +1,189 @@
+\chapter{Point Estimation: Unbiasedness and Efficiency}
+\label{ch:estimation}
+
+The previous chapter introduced point estimators and the notions of bias and
+variance. This chapter studies them in depth. We first build estimators from data
+by matching sample quantities to model quantities, then ask which estimators are
+\emph{unbiased}, see how nonlinearity creates bias, and finally compare
+unbiased estimators by their variance to find the most \emph{efficient}.
+
+\section{Estimators Built from Data}
+
+A natural way to estimate a parameter is to match a population quantity—a mean, a
+probability—to its sample counterpart. The law of large numbers is what makes
+this work.
+
+\begin{example}[A binomial parameter from queue data]
+At a station, the number of women in each of $100$ queues of length $10$ is
+recorded. Modeling the count in a queue as $\Bin(10,p)$, estimate $p$.
+
+\solution If each of the $10$ positions is independently a woman with probability
+$p$, the count is $\Bin(10,p)$ with mean $10p$. The sample mean of the counts is
+$\xbar=4.35$, which we equate to $10p$, giving $\hat p=0.435$. We matched the
+model's mean to the data's mean.
+\end{example}
+
+\begin{example}[Two estimators for a geometric parameter]
+The number of cycles to pregnancy for $93$ women is recorded, modeled as
+$\Geo(p)$. Propose estimators of $p$.
+
+\solution Two natural choices arise. Since $\E[X]=1/p$, we can estimate $\E[X]$
+by the sample mean and invert: $\hat p=1/\xbar=93/331$. Alternatively, since
+$p=\Prob(X=1)$, we can use the observed fraction of women who conceived in the
+first cycle, $\hat p=29/93$. The two estimators—$0.281$ and $0.312$—need not
+agree; choosing between them is exactly the kind of question this chapter
+addresses. (For the $474$ nonsmoking women, the analogous estimates are
+$474/1285=0.369$ and $198/474=0.418$.)
+\end{example}
+
+\begin{example}[Was London bombed at random? A Poisson fit]
+An area of South London was divided into $576$ quarter-kilometer squares, and the
+number of V-bomb hits in each was tallied:
+\[
+\begin{array}{c|cccccccc}
+\text{hits} & 0 & 1 & 2 & 3 & 4 & 5 & 6 & 7\\\hline
+\text{squares} & 229 & 211 & 93 & 35 & 7 & 0 & 0 & 1
+\end{array}
+\]
+If hits fall purely at random, the count per square should be Poisson. Estimate
+its mean and assess the fit.
+
+\solution Modeling the count as $\Pois(\mu)$ with $\E[X]=\mu$, we estimate $\mu$
+by the average number of hits per square,
+\[
+  \hat\mu=\frac{0\cdot 229+1\cdot 211+2\cdot 93+\cdots+7\cdot 1}{576}\approx 0.93.
+\]
+Plugging $\hat\mu$ into the Poisson pmf and comparing predicted to observed
+relative frequencies:
+\[
+\begin{array}{c|ccccc}
+\text{hits} & 0 & 1 & 2 & 3 & 4\\\hline
+\text{observed} & 0.40 & 0.37 & 0.16 & 0.06 & 0.01\\
+\text{Poisson} & 0.39 & 0.37 & 0.17 & 0.05 & 0.01
+\end{array}
+\]
+The agreement is remarkable—evidence that the bombing was indeed random rather
+than precisely targeted. A formal version of this comparison, the chi-square
+goodness-of-fit test, appears in Chapter~\ref{ch:gof}.
+\end{example}
+
+\section{Unbiased Estimators}
+
+Recall that $\hat\theta_n$ is \emph{unbiased} for $\theta$ if
+$\E[\hat\theta_n]=\theta$. Unbiasedness means the estimator is correct
+\emph{on average}, with no systematic over- or under-shooting.
+
+\begin{example}[An unbiased estimator of $\theta^2$]
+Let $X_1,\dots,X_n$ be a sample from the uniform distribution on $[-\theta,\theta]$.
+Show that $T=\tfrac3n\sum_{i=1}^n X_i^2$ is unbiased for $\theta^2$.
+
+\solution For a $\Unif(-\theta,\theta)$ variable, $\E[X_i]=0$ and
+$\Var(X_i)=\tfrac{(2\theta)^2}{12}=\tfrac{\theta^2}{3}$, so
+$\E[X_i^2]=\Var(X_i)+\E[X_i]^2=\tfrac{\theta^2}{3}$. By linearity,
+\[
+  \E[T]=\frac3n\sum_{i=1}^n\E[X_i^2]=\frac3n\cdot n\cdot\frac{\theta^2}{3}=\theta^2. \qedhere
+\]
+\end{example}
+
+\begin{example}[An unbiased estimator of a probability]
+For a $\Geo(p)$ sample, estimate $\Prob(X\le 3)$ by the relative frequency
+$S=\tfrac1n\#\{i:X_i\le 3\}$. Show $S$ is unbiased.
+
+\solution Introduce indicators $Y_i=\mathbf 1\{X_i\le 3\}$, so
+$\E[Y_i]=\Prob(X_i\le 3)$. Then
+\[
+  \E[S]=\frac1n\sum_{i=1}^n\E[Y_i]=\Prob(X\le 3).
+\]
+A relative frequency is always an unbiased estimator of the corresponding
+probability—no matter the underlying distribution.
+\end{example}
+
+\begin{remark}[Why the sample variance divides by $n-1$]
+We can now explain the divisor $n-1$ promised in Chapter~\ref{ch:eda}. For an
+i.i.d.\ sample with variance $\sigma^2$, the estimator
+$\frac1{n-1}\sum(X_i-\Xbar_n)^2$ is exactly unbiased for $\sigma^2$, whereas
+dividing by $n$ would systematically underestimate it (because the deviations are
+taken about the sample mean, which is itself pulled toward the data). The
+correction factor $\tfrac{n}{n-1}$ removes this downward bias.
+\end{remark}
+
+\section{Bias from Nonlinearity}
+
+Unbiasedness is fragile under nonlinear transformation: even if $T$ is unbiased
+for $\theta$, $g(T)$ is usually \emph{biased} for $g(\theta)$. Jensen's
+inequality (Chapter~\ref{ch:limits}) tells us the \emph{direction} of the bias.
+
+\begin{example}[A square root introduces bias]
+With $T=\tfrac3n\sum X_i^2$ unbiased for $\theta^2$ as above, is $\sqrt T$
+unbiased for $\theta$?
+
+\solution The function $g(x)=\sqrt x$ is concave, so by Jensen's inequality
+$\E[\sqrt T]\le\sqrt{\E[T]}=\sqrt{\theta^2}=\theta$. Thus $\sqrt T$ has
+\emph{negative} bias: it tends to underestimate $\theta$.
+\end{example}
+
+\begin{example}[Inverting the sample mean]
+For a $\Geo(p)$ sample, the law of large numbers suggests $T=1/\Xbar_n$ as an
+estimator of $p$ (since $\E[X]=1/p$). Is it unbiased?
+
+\solution The function $g(x)=1/x$ is convex on $(0,\infty)$, so Jensen's
+inequality gives $\E[1/\Xbar_n]>1/\E[\Xbar_n]=p$. Hence $T$ has \emph{positive}
+bias—it tends to overestimate $p$. Inverting an unbiased estimator does not
+preserve unbiasedness.
+\end{example}
+
+\begin{example}[An exact bias calculation]
+For a $\Pois(\mu)$ sample, the probability of zero arrivals is $e^{-\mu}$, which
+one might estimate by $T=e^{-\Xbar_n}$. Compute $\E[T]$.
+
+\solution Write $T=e^{-Z/n}$ with $Z=\sum X_i\sim\Pois(n\mu)$. Then
+\[
+  \E[T]=\sum_{k=0}^\infty e^{-k/n}\,\frac{(n\mu)^k}{k!}e^{-n\mu}
+   =e^{-n\mu}\sum_{k=0}^\infty\frac{(n\mu e^{-1/n})^k}{k!}
+   =e^{-n\mu}\,e^{\,n\mu e^{-1/n}}=e^{-n\mu(1-e^{-1/n})}.
+\]
+Since $1-e^{-1/n}\neq 1/n$, this is not equal to $e^{-\mu}$: the estimator is
+biased, though the bias vanishes as $n\to\infty$.
+\end{example}
+
+\section{Efficiency: Comparing Unbiased Estimators}
+
+Among unbiased estimators, the better one has the smaller variance (equivalently,
+since bias is zero, the smaller MSE). Such an estimator is more \emph{efficient}.
+
+\begin{example}[Optimally combining two sample means]
+Two independent samples, of sizes $n$ and $m$ from the same distribution with
+mean $\mu$, give sample means $\Xbar_n$ and $\Ybar_m$. Combine them as
+$T=r\Xbar_n+(1-r)\Ybar_m$. (a)~Show $T$ is unbiased. (b)~Find the $r$ minimizing
+its variance.
+
+\solution (a)~By linearity, $\E[T]=r\mu+(1-r)\mu=\mu$ for every $r$, so $T$ is
+unbiased. (b)~By independence,
+\[
+  \Var(T)=r^2\frac{\sigma^2}{n}+(1-r)^2\frac{\sigma^2}{m}.
+\]
+Differentiating in $r$ and setting the derivative to zero gives
+$\tfrac{2r}{n}-\tfrac{2(1-r)}{m}=0$, i.e.\ $r=\tfrac{n}{n+m}$. The optimal weights
+are proportional to the sample sizes—the larger sample is trusted more.
+\end{example}
+
+\begin{example}[Pooling two variance estimators]
+Independent normal samples of sizes $n$ and $m$ have sample variances $S_X^2$
+and $S_Y^2$, both unbiased for the common $\sigma^2$, with
+$\Var(S_X^2)=\tfrac{2\sigma^4}{n-1}$ and $\Var(S_Y^2)=\tfrac{2\sigma^4}{m-1}$.
+Among estimators $aS_X^2+bS_Y^2$, find the best.
+
+\solution For unbiasedness, $\E[aS_X^2+bS_Y^2]=(a+b)\sigma^2=\sigma^2$ forces
+$a+b=1$. Writing $b=1-a$,
+\[
+  \Var(aS_X^2+(1-a)S_Y^2)=2\sigma^4\Bigl(\frac{a^2}{n-1}+\frac{(1-a)^2}{m-1}\Bigr).
+\]
+Minimizing over $a$ gives $a=\tfrac{n-1}{n+m-2}$ and hence
+$b=\tfrac{m-1}{n+m-2}$. This is the \emph{pooled} variance estimator, weighting
+each sample by its degrees of freedom—the standard estimator behind the
+two-sample $t$-test.
+\end{example}
+
+The maximum likelihood method of the next chapter provides a systematic recipe
+for constructing estimators that, under mild conditions, are asymptotically
+unbiased and asymptotically the most efficient of all.
